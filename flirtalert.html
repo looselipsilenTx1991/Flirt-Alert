@@ -1,0 +1,1674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlirtAlert</title>
+    <style>
+        /* Basic styling */
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            color: #333;
+            min-height: 100vh;
+            position: relative;
+        }
+        
+        /* Animated gradient background */
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        /* Add subtle pattern overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(255, 182, 193, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        /* Add floating hearts animation */
+        body::after {
+            content: '💕 💖 💗 🌸 ✨ 💫 🦋 🌺';
+            position: fixed;
+            top: -10%;
+            left: -10%;
+            width: 120%;
+            height: 120%;
+            font-size: 20px;
+            opacity: 0.1;
+            animation: floatHearts 30s linear infinite;
+            pointer-events: none;
+            z-index: -1;
+            letter-spacing: 200px;
+            line-height: 150px;
+        }
+        
+        @keyframes floatHearts {
+            0% { transform: translateY(100vh) rotate(0deg); }
+            100% { transform: translateY(-100vh) rotate(360deg); }
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1, h2, h3 {
+            margin-top: 0;
+        }
+        button {
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #2563eb;
+        }
+        button.secondary {
+            background-color: #e5e7eb;
+            color: #374151;
+        }
+        button.secondary:hover {
+            background-color: #d1d5db;
+        }
+        button.active {
+            background-color: #1d4ed8;
+        }
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        .form-card {
+            background-color: #f3f4f6;
+            padding: 16px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 12px;
+        }
+        label {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        .grid {
+            display: grid;
+            gap: 12px;
+        }
+        .grid-2 {
+            grid-template-columns: 1fr;
+        }
+        .card {
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 12px;
+            background-color: white;
+        }
+        .card-header {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .card-body {
+            font-size: 14px;
+            color: #6b7280;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background-color: #f3f4f6;
+            padding: 12px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+        }
+        .stat-label {
+            font-size: 14px;
+            color: #6b7280;
+        }
+        .positive {
+            color: #ef4444;
+            font-weight: 600;
+        }
+        .negative {
+            color: #10b981;
+        }
+        .info-box {
+            background-color: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+        .notification-card {
+            border: 1px solid #fecaca;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            overflow: hidden;
+        }
+        .notification-header {
+            background-color: #fee2e2;
+            padding: 8px 12px;
+            font-weight: 600;
+        }
+        .notification-body {
+            padding: 12px;
+        }
+        .partner-list {
+            list-style-type: disc;
+            margin-left: 20px;
+        }
+        .hidden {
+            display: none !important;
+        }
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 16px;
+            color: #3b82f6;
+            text-decoration: none;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+        }
+        .checkbox-group input {
+            width: auto;
+            margin-right: 8px;
+        }
+        .profile-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .profile-card:hover {
+            background-color: #f9fafb;
+        }
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 12px;
+            color: #9ca3af;
+        }
+        
+        /* Media queries for responsiveness */
+        @media (min-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr 1fr;
+            }
+            .stats {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>FlirtAlert</h1>
+        
+        <!-- Tabs Navigation -->
+        <div class="tabs" id="tabs">
+            <button data-tab="dashboard" class="active">Dashboard</button>
+            <button data-tab="partners">Partners</button>
+            <button data-tab="encounters">Encounters</button>
+            <button data-tab="tests">Tests</button>
+            <button data-tab="symptoms">Symptoms</button>
+            <button data-tab="notifications">Notifications</button>
+        </div>
+        
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="tab-content">
+            <h2>Dashboard</h2>
+            
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="partners-count">0</div>
+                    <div class="stat-label">Partners</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="encounters-count">0</div>
+                    <div class="stat-label">Encounters</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="tests-count">0</div>
+                    <div class="stat-label">Tests</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="symptoms-count">0</div>
+                    <div class="stat-label">Symptoms</div>
+                </div>
+            </div>
+            
+            <h3>STI Profiles</h3>
+            <div class="grid grid-2" id="sti-profiles">
+                <!-- STI profiles will be populated here -->
+            </div>
+            
+            <div id="notification-alert" class="hidden">
+                <!-- Notification alert will appear here if needed -->
+            </div>
+            
+            <h3>Recent Tests</h3>
+            <div id="recent-tests">
+                <!-- Recent tests will be populated here -->
+            </div>
+        </div>
+        
+        <!-- Partners Tab -->
+        <div id="partners" class="tab-content hidden">
+            <h2>Partners</h2>
+            
+            <div class="form-card">
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label for="partner-name">Name</label>
+                        <input type="text" id="partner-name" placeholder="Partner name">
+                    </div>
+                    <div class="form-group">
+                        <label for="partner-phone">Phone</label>
+                        <input type="tel" id="partner-phone" placeholder="Phone number">
+                    </div>
+                    <div class="form-group">
+                        <label for="partner-email">Email</label>
+                        <input type="email" id="partner-email" placeholder="Email address">
+                    </div>
+                    <div class="form-group">
+                        <label for="partner-notes">Notes</label>
+                        <textarea id="partner-notes" placeholder="Additional notes" rows="2"></textarea>
+                    </div>
+                </div>
+                <button id="add-partner-btn">Add Partner</button>
+            </div>
+            
+            <div id="partners-list">
+                <!-- Partners will be populated here -->
+            </div>
+        </div>
+        
+        <!-- Encounters Tab -->
+        <div id="encounters" class="tab-content hidden">
+            <h2>Encounters</h2>
+            
+            <div class="form-card">
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label for="encounter-date">Date</label>
+                        <input type="date" id="encounter-date">
+                    </div>
+                    <div class="form-group">
+                        <label for="encounter-partner">Partner</label>
+                        <select id="encounter-partner">
+                            <option value="">Select Partner</option>
+                            <!-- Partners will be populated here -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="encounter-activities">Activities</label>
+                        <input type="text" id="encounter-activities" placeholder="e.g., oral, vaginal, anal">
+                    </div>
+                    <div class="form-group">
+                        <label for="encounter-notes">Notes</label>
+                        <textarea id="encounter-notes" placeholder="Additional details" rows="2"></textarea>
+                    </div>
+                </div>
+                <button id="add-encounter-btn">Add Encounter</button>
+            </div>
+            
+            <div id="encounters-list">
+                <!-- Encounters will be populated here -->
+            </div>
+        </div>
+        
+        <!-- Tests Tab -->
+        <div id="tests" class="tab-content hidden">
+            <div id="test-form-view">
+                <h2>STI Tests</h2>
+                
+                <div class="form-card">
+                    <div class="grid">
+                        <div class="form-group">
+                            <label for="test-date">Date</label>
+                            <input type="date" id="test-date">
+                        </div>
+                        <div class="form-group">
+                            <label for="test-type">Test Type</label>
+                            <select id="test-type">
+                                <option value="">Select Test Type</option>
+                                <option value="HIV">HIV</option>
+                                <option value="Chlamydia">Chlamydia</option>
+                                <option value="Gonorrhea">Gonorrhea</option>
+                                <option value="Syphilis">Syphilis</option>
+                                <option value="Hepatitis B">Hepatitis B</option>
+                                <option value="Hepatitis C">Hepatitis C</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="test-result">Result</label>
+                            <select id="test-result">
+                                <option value="negative">Negative</option>
+                                <option value="positive">Positive</option>
+                                <option value="inconclusive">Inconclusive</option>
+                            </select>
+                        </div>
+                        
+                        <div id="negative-test-fields" class="form-group">
+                            <label for="last-negative-date">Override Last Negative Date (optional)</label>
+                            <input type="date" id="last-negative-date">
+                        </div>
+                        
+                        <div id="syphilis-fields" class="hidden">
+                            <div class="form-group">
+                                <label for="syphilis-titer">Titer (RPR/VDRL)</label>
+                                <select id="syphilis-titer">
+                                    <option value="">Select Titer</option>
+                                    <option value="Non-reactive">Non-reactive</option>
+                                    <option value="1:1">1:1</option>
+                                    <option value="1:2">1:2</option>
+                                    <option value="1:4">1:4</option>
+                                    <option value="1:8">1:8</option>
+                                    <option value="1:16">1:16</option>
+                                    <option value="1:32">1:32</option>
+                                    <option value="1:64">1:64</option>
+                                    <option value="1:128">1:128</option>
+                                    <option value="1:256">1:256</option>
+                                    <option value="1:512">1:512</option>
+                                    <option value="Other">Other (specify in notes)</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="syphilis-stage-group">
+                                <label for="syphilis-stage">Syphilis Stage</label>
+                                <select id="syphilis-stage">
+                                    <option value="">Select Stage</option>
+                                    <option value="primary">Primary (lesion/chancre)</option>
+                                    <option value="secondary">Secondary (rash)</option>
+                                    <option value="early-latent">Early Latent (less than 1 year)</option>
+                                    <option value="late-latent">Late Latent (more than 1 year)</option>
+                                </select>
+                            </div>
+                            <div id="syphilis-info" class="info-box hidden">
+                                <!-- Syphilis treatment info will be populated here -->
+                            </div>
+                        </div>
+                        
+                        <div id="treatment-fields" class="hidden">
+                            <div class="form-group">
+                                <label for="treatment-date">Treatment Date</label>
+                                <input type="date" id="treatment-date">
+                            </div>
+                            <div class="form-group">
+                                <label for="treatment-details">Treatment Details</label>
+                                <input type="text" id="treatment-details" placeholder="Medication, dosage, etc.">
+                            </div>
+                        </div>
+                    </div>
+                    <button id="add-test-btn">Add Test</button>
+                </div>
+                
+                <div class="sti-buttons">
+                    <button class="secondary sti-profile-btn" data-sti="Syphilis">View Syphilis Profile</button>
+                    <button class="secondary sti-profile-btn" data-sti="HIV">View HIV Profile</button>
+                    <button class="secondary sti-profile-btn" data-sti="Chlamydia">View Chlamydia Profile</button>
+                    <button class="secondary sti-profile-btn" data-sti="Gonorrhea">View Gonorrhea Profile</button>
+                </div>
+                
+                <div id="tests-list">
+                    <!-- Tests will be populated here -->
+                </div>
+            </div>
+            
+            <div id="sti-profile-view" class="hidden">
+                <button class="back-button" id="back-to-tests">← Back to Tests</button>
+                <h2 id="sti-profile-title">STI Profile</h2>
+                
+                <div class="card">
+                    <h3>Testing History</h3>
+                    <div id="sti-testing-history">
+                        <!-- Testing history will be populated here -->
+                    </div>
+                </div>
+                
+                <div id="treatment-history-section" class="card hidden">
+                    <h3>Treatment History</h3>
+                    <div id="sti-treatment-history">
+                        <!-- Treatment history will be populated here -->
+                    </div>
+                </div>
+                
+                <div id="related-symptoms-section" class="card hidden">
+                    <h3>Related Symptoms</h3>
+                    <div id="sti-related-symptoms">
+                        <!-- Related symptoms will be populated here -->
+                    </div>
+                </div>
+                
+                <div id="sti-info" class="info-box">
+                    <!-- STI info will be populated here -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Symptoms Tab -->
+        <div id="symptoms" class="tab-content hidden">
+            <h2>Symptoms</h2>
+            
+            <div class="form-card">
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label for="symptom-date">Date</label>
+                        <input type="date" id="symptom-date">
+                    </div>
+                    <div class="form-group">
+                        <label for="symptom-desc">Description</label>
+                        <input type="text" id="symptom-desc" placeholder="e.g., Discharge, Pain, Rash">
+                    </div>
+                    <div class="form-group">
+                        <label for="linked-sti">Linked to STI</label>
+                        <select id="linked-sti">
+                            <option value="">None/Unknown</option>
+                            <option value="Syphilis">Syphilis</option>
+                            <option value="HIV">HIV</option>
+                            <option value="Chlamydia">Chlamydia</option>
+                            <option value="Gonorrhea">Gonorrhea</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="symptom-severity">Severity</label>
+                        <select id="symptom-severity">
+                            <option value="mild">Mild</option>
+                            <option value="moderate">Moderate</option>
+                            <option value="severe">Severe</option>
+                        </select>
+                    </div>
+                    <div class="form-group checkbox-group">
+                        <input type="checkbox" id="symptom-resolved">
+                        <label for="symptom-resolved">Symptom has resolved</label>
+                    </div>
+                    <div class="form-group hidden" id="resolved-date-group">
+                        <label for="resolved-date">Date Resolved</label>
+                        <input type="date" id="resolved-date">
+                    </div>
+                </div>
+                <button id="add-symptom-btn">Add Symptom</button>
+            </div>
+            
+            <div id="symptoms-list">
+                <!-- Symptoms will be populated here -->
+            </div>
+        </div>
+        
+        <!-- Notifications Tab -->
+        <div id="notifications" class="tab-content hidden">
+            <h2>Partner Notifications</h2>
+            
+            <div id="notifications-list">
+                <!-- Notifications will be populated here -->
+            </div>
+            
+            <div class="info-box">
+                <h3>Notification Information:</h3>
+                <p><strong>Partners should be notified in these situations:</strong></p>
+                <ul>
+                    <li><strong>Positive Test Results:</strong></li>
+                    <ul>
+                        <li>Syphilis (Primary): 90 days before test or symptom onset</li>
+                        <li>Syphilis (Secondary): 7 months before test or symptom onset</li>
+                        <li>Syphilis (Early Latent): 1 year before test or since last negative test</li>
+                        <li>Syphilis (Late Latent): 3 years or since last negative test</li>
+                        <li>HIV: Since last negative test or 1 year</li>
+                        <li>Chlamydia/Gonorrhea: 60 days before test or symptom onset</li>
+                    </ul>
+                    <li><strong>Negative Tests Within Incubation Period:</strong></li>
+                    <ul>
+                        <li>If you had encounters within the incubation period before testing negative</li>
+                        <li>The negative result doesn't rule out infection from those recent encounters</li>
+                        <li>Partners should be notified and advised to get tested</li>
+                        <li>Consider retesting after the full incubation period has passed</li>
+                    </ul>
+                </ul>
+                <p><strong>Incubation Periods:</strong> Syphilis (90 days), HIV (90 days), Chlamydia (21 days), Gonorrhea (14 days)</p>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>All data is stored locally in your browser. No information is transmitted to any server.</p>
+            <p>This application is for personal use only and is not a substitute for professional medical advice.</p>
+        </div>
+    </div>
+
+    <script>
+        // Data storage
+        let partners = [];
+        let encounters = [];
+        let tests = [];
+        let symptoms = [];
+        let notifications = [];
+        let activeTab = 'dashboard';
+        let viewingStiProfile = false;
+        let selectedSti = null;
+
+        // DOM elements
+        const tabButtons = document.querySelectorAll('#tabs button');
+        const tabContents = document.querySelectorAll('.tab-content');
+        
+        // Load data from localStorage
+        function loadData() {
+            const savedPartners = localStorage.getItem('sti-partners');
+            const savedEncounters = localStorage.getItem('sti-encounters');
+            const savedTests = localStorage.getItem('sti-tests');
+            const savedSymptoms = localStorage.getItem('sti-symptoms');
+            
+            if (savedPartners) partners = JSON.parse(savedPartners);
+            if (savedEncounters) encounters = JSON.parse(savedEncounters);
+            if (savedTests) tests = JSON.parse(savedTests);
+            if (savedSymptoms) symptoms = JSON.parse(savedSymptoms);
+            
+            // Generate notifications based on loaded data
+            generateNotifications();
+        }
+
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('sti-partners', JSON.stringify(partners));
+            localStorage.setItem('sti-encounters', JSON.stringify(encounters));
+            localStorage.setItem('sti-tests', JSON.stringify(tests));
+            localStorage.setItem('sti-symptoms', JSON.stringify(symptoms));
+            
+            // Update UI
+            updateUI();
+        }
+
+        // Update the entire UI
+        function updateUI() {
+            renderDashboard();
+            renderPartners();
+            renderEncounters();
+            renderTests();
+            renderSymptoms();
+            renderNotifications();
+            updatePartnerDropdown();
+        }
+        
+        // Switch tabs
+        function switchTab(tabId) {
+            // Hide all tabs
+            tabContents.forEach(tab => {
+                tab.classList.add('hidden');
+            });
+            
+            // Remove active class from all tab buttons
+            tabButtons.forEach(button => {
+                button.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabId).classList.remove('hidden');
+            
+            // Add active class to selected tab button
+            document.querySelector(`button[data-tab="${tabId}"]`).classList.add('active');
+            
+            // Update active tab
+            activeTab = tabId;
+            
+            // Reset STI profile view if switching away from tests tab
+            if (tabId !== 'tests') {
+                viewingStiProfile = false;
+                document.getElementById('test-form-view').classList.remove('hidden');
+                document.getElementById('sti-profile-view').classList.add('hidden');
+            }
+        }
+        
+        // Partner functions
+        function addPartner() {
+            const nameInput = document.getElementById('partner-name');
+            const phoneInput = document.getElementById('partner-phone');
+            const emailInput = document.getElementById('partner-email');
+            const notesInput = document.getElementById('partner-notes');
+            
+            const name = nameInput.value.trim();
+            if (!name) return; // Don't add partner without a name
+            
+            const newPartner = {
+                id: Date.now().toString(),
+                name: name,
+                phone: phoneInput.value.trim(),
+                email: emailInput.value.trim(),
+                notes: notesInput.value.trim()
+            };
+            
+            partners.push(newPartner);
+            saveData();
+            
+            // Clear inputs
+            nameInput.value = '';
+            phoneInput.value = '';
+            emailInput.value = '';
+            notesInput.value = '';
+        }
+        
+        // Render partners list
+        function renderPartners() {
+            const partnersListEl = document.getElementById('partners-list');
+            partnersListEl.innerHTML = '';
+            
+            if (partners.length === 0) {
+                partnersListEl.innerHTML = '<div class="card">No partners added</div>';
+                return;
+            }
+            
+            partners.forEach(partner => {
+                const partnerCard = document.createElement('div');
+                partnerCard.className = 'card';
+                
+                let html = `<div class="card-header">${partner.name}</div>`;
+                html += '<div class="card-body">';
+                
+                if (partner.phone) {
+                    html += `<div>Phone: ${partner.phone}</div>`;
+                }
+                
+                if (partner.email) {
+                    html += `<div>Email: ${partner.email}</div>`;
+                }
+                
+                if (partner.notes) {
+                    html += `<div>Notes: ${partner.notes}</div>`;
+                }
+                
+                html += '</div>';
+                
+                partnerCard.innerHTML = html;
+                partnersListEl.appendChild(partnerCard);
+            });
+            
+            // Update partner count on dashboard
+            document.getElementById('partners-count').textContent = partners.length;
+        }
+        
+        // Update partner dropdown in encounters tab
+        function updatePartnerDropdown() {
+            const partnerSelect = document.getElementById('encounter-partner');
+            partnerSelect.innerHTML = '<option value="">Select Partner</option>';
+            
+            partners.forEach(partner => {
+                const option = document.createElement('option');
+                option.value = partner.id;
+                option.textContent = partner.name;
+                partnerSelect.appendChild(option);
+            });
+        }
+        
+        // Encounter functions
+        function addEncounter() {
+            const dateInput = document.getElementById('encounter-date');
+            const partnerInput = document.getElementById('encounter-partner');
+            const activitiesInput = document.getElementById('encounter-activities');
+            const notesInput = document.getElementById('encounter-notes');
+            
+            const date = dateInput.value;
+            const partnerId = partnerInput.value;
+            
+            if (!date || !partnerId) return; // Don't add encounter without date and partner
+            
+            const newEncounter = {
+                id: Date.now().toString(),
+                date: date,
+                partnerId: partnerId,
+                activities: activitiesInput.value.trim(),
+                notes: notesInput.value.trim()
+            };
+            
+            encounters.push(newEncounter);
+            saveData();
+            generateNotifications();
+            
+            // Clear inputs
+            dateInput.value = '';
+            partnerInput.value = '';
+            activitiesInput.value = '';
+            notesInput.value = '';
+        }
+        
+        // Get partner name by ID
+        function getPartnerName(id) {
+            const partner = partners.find(p => p.id === id);
+            return partner ? partner.name : 'Unknown';
+        }
+        
+        // Render encounters list
+        function renderEncounters() {
+            const encountersListEl = document.getElementById('encounters-list');
+            encountersListEl.innerHTML = '';
+            
+            if (encounters.length === 0) {
+                encountersListEl.innerHTML = '<div class="card">No encounters recorded</div>';
+                return;
+            }
+            
+            // Sort encounters by date (most recent first)
+            const sortedEncounters = [...encounters].sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            sortedEncounters.forEach(encounter => {
+                const encounterCard = document.createElement('div');
+                encounterCard.className = 'card';
+                
+                let html = `<div class="card-header">${encounter.date} - ${getPartnerName(encounter.partnerId)}</div>`;
+                html += '<div class="card-body">';
+                
+                if (encounter.activities) {
+                    html += `<div>Activities: ${encounter.activities}</div>`;
+                }
+                
+                if (encounter.notes) {
+                    html += `<div>Notes: ${encounter.notes}</div>`;
+                }
+                
+                html += '</div>';
+                
+                encounterCard.innerHTML = html;
+                encountersListEl.appendChild(encounterCard);
+            });
+            
+            // Update encounters count on dashboard
+            document.getElementById('encounters-count').textContent = encounters.length;
+        }
+        
+        // Test functions
+        function addTest() {
+            const dateInput = document.getElementById('test-date');
+            const typeInput = document.getElementById('test-type');
+            const resultInput = document.getElementById('test-result');
+            const lastNegativeDateInput = document.getElementById('last-negative-date');
+            const syphilisTiterInput = document.getElementById('syphilis-titer');
+            const syphilisStageInput = document.getElementById('syphilis-stage');
+            const treatmentDateInput = document.getElementById('treatment-date');
+            const treatmentDetailsInput = document.getElementById('treatment-details');
+            
+            const date = dateInput.value;
+            const type = typeInput.value;
+            
+            if (!date || !type) return; // Don't add test without date and type
+            
+            // Get previous treatments for this STI
+            const previousTreatments = tests
+                .filter(t => t.type === type && t.result === 'positive' && t.treatmentDate)
+                .map(t => t.treatmentDate);
+            
+            // Get last negative test date
+            const negativeTests = tests
+                .filter(t => t.type === type && t.result === 'negative')
+                .sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            const lastNegative = negativeTests.length > 0 ? negativeTests[0].date : '';
+            
+            const newTest = {
+                id: Date.now().toString(),
+                date: date,
+                type: type,
+                result: resultInput.value,
+                syphilisTiter: type === 'Syphilis' ? syphilisTiterInput.value : '',
+                syphilisStage: (type === 'Syphilis' && resultInput.value === 'positive') ? syphilisStageInput.value : '',
+                lastNegativeDate: lastNegativeDateInput.value || lastNegative,
+                treatmentDate: resultInput.value === 'positive' ? treatmentDateInput.value : '',
+                treatmentDetails: resultInput.value === 'positive' ? treatmentDetailsInput.value : '',
+                previousTreatments: previousTreatments
+            };
+            
+            tests.push(newTest);
+            saveData();
+            generateNotifications();
+            
+            // Clear inputs
+            dateInput.value = '';
+            typeInput.value = '';
+            resultInput.value = 'negative';
+            lastNegativeDateInput.value = '';
+            syphilisTiterInput.value = '';
+            syphilisStageInput.value = '';
+            treatmentDateInput.value = '';
+            treatmentDetailsInput.value = '';
+            
+            // Hide conditional fields
+            document.getElementById('syphilis-fields').classList.add('hidden');
+            document.getElementById('syphilis-stage-group').classList.add('hidden');
+            document.getElementById('treatment-fields').classList.add('hidden');
+            document.getElementById('syphilis-info').classList.add('hidden');
+        }
+        
+        // Render tests list
+        function renderTests() {
+            const testsListEl = document.getElementById('tests-list');
+            testsListEl.innerHTML = '';
+            
+            if (tests.length === 0) {
+                testsListEl.innerHTML = '<div class="card">No tests recorded</div>';
+                return;
+            }
+            
+            // Sort tests by date (most recent first)
+            const sortedTests = [...tests].sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            sortedTests.forEach(test => {
+                const testCard = document.createElement('div');
+                testCard.className = test.result === 'positive' ? 'card' : 'card';
+                
+                let html = `<div class="card-header">${test.date} - ${test.type} - `;
+                html += `<span class="${test.result === 'positive' ? 'positive' : 'negative'}">${test.result.charAt(0).toUpperCase() + test.result.slice(1)}</span></div>`;
+                html += '<div class="card-body">';
+                
+                if (test.type === 'Syphilis') {
+                    if (test.syphilisTiter) {
+                        html += `<div>Titer: ${test.syphilisTiter}</div>`;
+                    }
+                    if (test.syphilisStage) {
+                        html += `<div>Stage: ${test.syphilisStage}</div>`;
+                    }
+                }
+                
+                if (test.result === 'positive' && test.treatmentDate) {
+                    html += `<div>Treated: ${test.treatmentDate} - ${test.treatmentDetails}</div>`;
+                }
+                
+                if (test.lastNegativeDate) {
+                    html += `<div>Last negative test: ${test.lastNegativeDate}</div>`;
+                }
+                
+                html += '</div>';
+                
+                testCard.innerHTML = html;
+                testsListEl.appendChild(testCard);
+            });
+            
+            // Update tests count on dashboard
+            document.getElementById('tests-count').textContent = tests.length;
+        }
+        
+        // Handle showing/hiding conditional fields in test form
+        function handleTestFormFields() {
+            const testType = document.getElementById('test-type').value;
+            const testResult = document.getElementById('test-result').value;
+            
+            // Syphilis fields - show titer for any syphilis test, stage only for positive
+            const syphilisFields = document.getElementById('syphilis-fields');
+            const syphilisStageGroup = document.getElementById('syphilis-stage-group');
+            
+            if (testType === 'Syphilis') {
+                syphilisFields.classList.remove('hidden');
+                
+                // Only show stage field for positive tests
+                if (testResult === 'positive') {
+                    syphilisStageGroup.classList.remove('hidden');
+                } else {
+                    syphilisStageGroup.classList.add('hidden');
+                }
+            } else {
+                syphilisFields.classList.add('hidden');
+            }
+            
+            // Treatment fields
+            const treatmentFields = document.getElementById('treatment-fields');
+            if (testResult === 'positive') {
+                treatmentFields.classList.remove('hidden');
+            } else {
+                treatmentFields.classList.add('hidden');
+            }
+            
+            // Negative test fields
+            const negativeTestFields = document.getElementById('negative-test-fields');
+            if (testResult === 'negative') {
+                negativeTestFields.classList.remove('hidden');
+            } else {
+                negativeTestFields.classList.add('hidden');
+            }
+            
+            // Update syphilis info
+            updateSyphilisInfo();
+        }
+        
+        // Update syphilis info box with treatment recommendations
+        function updateSyphilisInfo() {
+            const testType = document.getElementById('test-type').value;
+            const testResult = document.getElementById('test-result').value;
+            const syphilisStage = document.getElementById('syphilis-stage').value;
+            const syphilisInfo = document.getElementById('syphilis-info');
+            
+            // Only show syphilis info for positive syphilis tests
+            if (testType !== 'Syphilis' || testResult !== 'positive' || !syphilisStage) {
+                syphilisInfo.classList.add('hidden');
+                return;
+            }
+            
+            let treatment;
+            let notificationPeriod;
+            
+            if (syphilisStage === 'primary' || syphilisStage === 'secondary' || syphilisStage === 'early-latent') {
+                treatment = "One round of Bicillin 2.4 million units";
+            } else if (syphilisStage === 'late-latent') {
+                treatment = "Three rounds of Bicillin 2.4 million units, each one week apart";
+            } else {
+                treatment = "Select a stage to see treatment recommendation";
+            }
+            
+            if (syphilisStage === 'primary') {
+                notificationPeriod = "90 days before diagnosis";
+            } else if (syphilisStage === 'secondary') {
+                notificationPeriod = "7 months before diagnosis";
+            } else if (syphilisStage === 'early-latent') {
+                notificationPeriod = "1 year before diagnosis or since last negative test";
+            } else if (syphilisStage === 'late-latent') {
+                notificationPeriod = "3 years before diagnosis or since last negative test";
+            }
+            
+            syphilisInfo.innerHTML = `
+                <div><strong>Treatment:</strong> ${treatment}</div>
+                <div><strong>Notification Period:</strong> ${notificationPeriod}</div>
+            `;
+            syphilisInfo.classList.remove('hidden');
+        }
+        
+        // View STI profile
+        function viewStiProfile(stiType) {
+            selectedSti = stiType;
+            viewingStiProfile = true;
+            
+            document.getElementById('test-form-view').classList.add('hidden');
+            document.getElementById('sti-profile-view').classList.remove('hidden');
+            
+            document.getElementById('sti-profile-title').textContent = `${stiType} Testing Profile`;
+            
+            renderStiProfile();
+        }
+        
+        // Render STI profile
+        function renderStiProfile() {
+            // Get testing history
+            const testingHistory = tests
+                .filter(test => test.type.toLowerCase() === selectedSti.toLowerCase())
+                .sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            const positiveTests = testingHistory.filter(test => test.result === 'positive');
+            const negativeTests = testingHistory.filter(test => test.result === 'negative');
+            
+            // Get related symptoms
+            const relatedSymptoms = symptoms.filter(s => 
+                s.linkedToSti && s.linkedToSti.toLowerCase() === selectedSti.toLowerCase()
+            );
+            
+            // Get treatment history
+            const treatments = positiveTests
+                .filter(test => test.treatmentDate)
+                .map(test => ({
+                    date: test.treatmentDate,
+                    details: test.treatmentDetails,
+                    testDate: test.date,
+                    stage: test.syphilisStage
+                }))
+                .sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            // Render testing history
+            const historyEl = document.getElementById('sti-testing-history');
+            
+            if (testingHistory.length === 0) {
+                historyEl.innerHTML = '<div>No testing history available</div>';
+            } else {
+                let html = `
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 8px; font-weight: 500; font-size: 14px;">
+                        <div>Date</div>
+                        <div>Result</div>
+                        <div>Titer</div>
+                        <div>Details</div>
+                    </div>
+                `;
+                
+                testingHistory.forEach(test => {
+                    let details = '';
+                    if (test.result === 'positive' && test.syphilisStage) {
+                        details = `Stage: ${test.syphilisStage}`;
+                    }
+                    
+                    html += `
+                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 4px; border-bottom: 1px solid #eee; padding-bottom: 4px;">
+                            <div>${test.date}</div>
+                            <div class="${test.result === 'positive' ? 'positive' : 'negative'}">
+                                ${test.result.charAt(0).toUpperCase() + test.result.slice(1)}
+                            </div>
+                            <div>${test.syphilisTiter || '-'}</div>
+                            <div>${details}</div>
+                        </div>
+                    `;
+                });
+                
+                historyEl.innerHTML = html;
+            }
+            
+            // Render treatment history
+            const treatmentHistorySection = document.getElementById('treatment-history-section');
+            const treatmentHistoryEl = document.getElementById('sti-treatment-history');
+            
+            if (treatments.length === 0) {
+                treatmentHistorySection.classList.add('hidden');
+            } else {
+                treatmentHistorySection.classList.remove('hidden');
+                
+                let html = `
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 8px; font-weight: 500; font-size: 14px;">
+                        <div>Date</div>
+                        <div>Details</div>
+                    </div>
+                `;
+                
+                treatments.forEach(treatment => {
+                    html += `
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 4px; border-bottom: 1px solid #eee; padding-bottom: 4px;">
+                            <div>${treatment.date}</div>
+                            <div>${treatment.details}</div>
+                        </div>
+                    `;
+                });
+                
+                treatmentHistoryEl.innerHTML = html;
+            }
+            
+            // Render related symptoms
+            const relatedSymptomsSection = document.getElementById('related-symptoms-section');
+            const relatedSymptomsEl = document.getElementById('sti-related-symptoms');
+            
+            if (relatedSymptoms.length === 0) {
+                relatedSymptomsSection.classList.add('hidden');
+            } else {
+                relatedSymptomsSection.classList.remove('hidden');
+                
+                let html = `
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 8px; font-weight: 500; font-size: 14px;">
+                        <div>Date</div>
+                        <div>Description</div>
+                        <div>Status</div>
+                    </div>
+                `;
+                
+                relatedSymptoms.forEach(symptom => {
+                    html += `
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 4px; border-bottom: 1px solid #eee; padding-bottom: 4px;">
+                            <div>${symptom.date}</div>
+                            <div>${symptom.description}</div>
+                            <div>${symptom.resolved ? 'Resolved' : 'Active'}</div>
+                        </div>
+                    `;
+                });
+                
+                relatedSymptomsEl.innerHTML = html;
+            }
+            
+            // Render STI info
+            const stiInfoEl = document.getElementById('sti-info');
+            
+            if (selectedSti === 'Syphilis') {
+                stiInfoEl.innerHTML = `
+                    <h3>Syphilis Information</h3>
+                    <div><strong>Primary Stage:</strong> Notify partners from past 90 days</div>
+                    <div><strong>Secondary Stage:</strong> Notify partners from past 7 months</div>
+                    <div><strong>Early Latent:</strong> Notify partners from past year (or since last negative test)</div>
+                    <div><strong>Late Latent:</strong> Notify partners from past 3 years (or since last negative test)</div>
+                    <div class="mt-2">
+                        <strong>Treatment:</strong><br>
+                        Primary, Secondary, Early Latent: One round of Bicillin 2.4 million units<br>
+                        Late Latent: Three rounds of Bicillin 2.4 million units, each one week apart
+                    </div>
+                    <div class="mt-2">
+                        <strong>Titer Monitoring:</strong><br>
+                        • Titers should decrease 4-fold within 6-12 months after treatment<br>
+                        • Rising titers may indicate reinfection or treatment failure<br>
+                        • Non-reactive titers indicate successful treatment or no infection
+                    </div>
+                `;
+            } else if (selectedSti === 'HIV') {
+                stiInfoEl.innerHTML = `
+                    <h3>HIV Information</h3>
+                    <div><strong>Notification Period:</strong> All partners since last negative test or 1 year</div>
+                    <div><strong>Window Period:</strong> Up to 3 months for antibody detection</div>
+                `;
+            } else if (selectedSti === 'Chlamydia' || selectedSti === 'Gonorrhea') {
+                stiInfoEl.innerHTML = `
+                    <h3>${selectedSti} Information</h3>
+                    <div><strong>Notification Period:</strong> Partners from the past 60 days</div>
+                    <div><strong>Incubation Period:</strong> ${selectedSti === 'Chlamydia' ? '7-21 days' : '1-14 days'}</div>
+                `;
+            } else {
+                stiInfoEl.innerHTML = `
+                    <h3>${selectedSti} Information</h3>
+                    <div>No specific information available.</div>
+                `;
+            }
+        }
+        
+        // Symptom functions
+        function addSymptom() {
+            const dateInput = document.getElementById('symptom-date');
+            const descInput = document.getElementById('symptom-desc');
+            const linkedStiInput = document.getElementById('linked-sti');
+            const severityInput = document.getElementById('symptom-severity');
+            const resolvedInput = document.getElementById('symptom-resolved');
+            const resolvedDateInput = document.getElementById('resolved-date');
+            
+            const date = dateInput.value;
+            const description = descInput.value.trim();
+            
+            if (!date || !description) return; // Don't add symptom without date and description
+            
+            const newSymptom = {
+                id: Date.now().toString(),
+                date: date,
+                description: description,
+                linkedToSti: linkedStiInput.value,
+                severity: severityInput.value,
+                resolved: resolvedInput.checked,
+                resolvedDate: resolvedInput.checked ? resolvedDateInput.value : ''
+            };
+            
+            symptoms.push(newSymptom);
+            saveData();
+            generateNotifications();
+            
+            // Clear inputs
+            dateInput.value = '';
+            descInput.value = '';
+            linkedStiInput.value = '';
+            severityInput.value = 'mild';
+            resolvedInput.checked = false;
+            resolvedDateInput.value = '';
+            document.getElementById('resolved-date-group').classList.add('hidden');
+        }
+        
+        // Handle showing/hiding resolved date field
+        function toggleResolvedDateField() {
+            const resolvedChecked = document.getElementById('symptom-resolved').checked;
+            const resolvedDateGroup = document.getElementById('resolved-date-group');
+            
+            if (resolvedChecked) {
+                resolvedDateGroup.classList.remove('hidden');
+            } else {
+                resolvedDateGroup.classList.add('hidden');
+            }
+        }
+        
+        // Render symptoms list
+        function renderSymptoms() {
+            const symptomsListEl = document.getElementById('symptoms-list');
+            symptomsListEl.innerHTML = '';
+            
+            if (symptoms.length === 0) {
+                symptomsListEl.innerHTML = '<div class="card">No symptoms recorded</div>';
+                return;
+            }
+            
+            // Sort symptoms by date (most recent first)
+            const sortedSymptoms = [...symptoms].sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            sortedSymptoms.forEach(symptom => {
+                const symptomCard = document.createElement('div');
+                symptomCard.className = 'card';
+                
+                let html = `<div class="card-header">${symptom.date} - ${symptom.description}</div>`;
+                html += '<div class="card-body">';
+                html += `<div>Severity: ${symptom.severity}</div>`;
+                html += `<div>Status: ${symptom.resolved ? 'Resolved' : 'Active'}</div>`;
+                
+                if (symptom.resolved && symptom.resolvedDate) {
+                    html += `<div>Resolved Date: ${symptom.resolvedDate}</div>`;
+                }
+                
+                if (symptom.linkedToSti) {
+                    html += `<div>Linked to: ${symptom.linkedToSti}</div>`;
+                }
+                
+                html += '</div>';
+                
+                symptomCard.innerHTML = html;
+                symptomsListEl.appendChild(symptomCard);
+            });
+            
+            // Update symptoms count on dashboard
+            document.getElementById('symptoms-count').textContent = symptoms.length;
+        }
+        
+        // Get incubation period for STI
+        function getIncubationPeriod(sti) {
+            sti = sti.toLowerCase();
+            
+            if (sti === 'syphilis') return 90;
+            if (sti === 'hiv') return 90;
+            if (sti === 'chlamydia') return 21;
+            if (sti === 'gonorrhea') return 14;
+            
+            return 30; // Default
+        }
+        
+        // Get notification period for STI
+        function getNotificationPeriod(sti, stage = '') {
+            sti = sti.toLowerCase();
+            
+            if (sti === 'syphilis') {
+                if (stage === 'primary') return 90;
+                if (stage === 'secondary') return 210; // 7 months
+                if (stage === 'early-latent') return 365; // 1 year
+                return 1095; // 3 years for late latent
+            }
+            
+            if (sti === 'hiv') return 365; // 1 year
+            if (sti === 'chlamydia' || sti === 'gonorrhea') return 60;
+            
+            return 90; // Default
+        }
+        
+        // Generate notifications based on positive tests AND negative tests within incubation period
+        function generateNotifications() {
+            notifications = [];
+            
+            // Look at ALL tests (positive and negative)
+            tests.forEach(test => {
+                const testDate = new Date(test.date);
+                const incubationDays = getIncubationPeriod(test.type);
+                
+                if (test.result === 'positive') {
+                    // For positive tests: use standard notification logic
+                    handlePositiveTestNotification(test, testDate);
+                } else if (test.result === 'negative') {
+                    // For negative tests: check if any encounters occurred within incubation period
+                    handleNegativeTestNotification(test, testDate, incubationDays);
+                }
+            });
+            
+            renderNotifications();
+        }
+        
+        // Handle notifications for positive tests
+        function handlePositiveTestNotification(test, testDate) {
+            // Find earliest symptom date for this STI if available
+            const linkedSymptoms = symptoms.filter(s => 
+                s.linkedToSti && s.linkedToSti.toLowerCase() === test.type.toLowerCase()
+            ).sort((a, b) => new Date(a.date) - new Date(b.date));
+            
+            let startDate;
+            
+            if (linkedSymptoms.length > 0) {
+                // If we have a symptom, adjust by incubation period
+                const earliestSymptom = linkedSymptoms[0];
+                const incubationDays = getIncubationPeriod(test.type);
+                
+                startDate = new Date(earliestSymptom.date);
+                startDate.setDate(startDate.getDate() - incubationDays);
+            } else {
+                // Otherwise use standard notification period
+                startDate = new Date(testDate);
+                const lookbackDays = getNotificationPeriod(test.type, test.syphilisStage);
+                startDate.setDate(startDate.getDate() - lookbackDays);
+                
+                // If we have a last negative test, use that as the earliest date if it's more recent
+                if (test.lastNegativeDate) {
+                    const negativeDate = new Date(test.lastNegativeDate);
+                    if (negativeDate > startDate) {
+                        startDate = negativeDate;
+                    }
+                }
+            }
+            
+            // Find all encounters from startDate to test date
+            const relevantEncounters = encounters.filter(encounter => {
+                const encounterDate = new Date(encounter.date);
+                return encounterDate >= startDate && encounterDate <= testDate;
+            });
+            
+            addNotificationIfPartnersExist(test, testDate, startDate, relevantEncounters, 'positive');
+        }
+        
+        // Handle notifications for negative tests within incubation period
+        function handleNegativeTestNotification(test, testDate, incubationDays) {
+            // Look for encounters within the incubation period before this test
+            const incubationStartDate = new Date(testDate);
+            incubationStartDate.setDate(incubationStartDate.getDate() - incubationDays);
+            
+            const recentEncounters = encounters.filter(encounter => {
+                const encounterDate = new Date(encounter.date);
+                return encounterDate >= incubationStartDate && encounterDate < testDate;
+            });
+            
+            // If there are encounters within the incubation period, partners should be notified
+            // because the negative test doesn't rule out infection from those recent encounters
+            if (recentEncounters.length > 0) {
+                addNotificationIfPartnersExist(test, testDate, incubationStartDate, recentEncounters, 'negative-incubation');
+            }
+        }
+        
+        // Helper function to add notification if partners exist
+        function addNotificationIfPartnersExist(test, testDate, startDate, relevantEncounters, notificationType) {
+            // Get unique partners from these encounters
+            const partnerIds = [...new Set(relevantEncounters.map(e => e.partnerId))];
+            const partnersToNotify = partnerIds.map(id => {
+                const partner = partners.find(p => p.id === id);
+                return partner || { id, name: 'Unknown' };
+            });
+            
+            if (partnersToNotify.length > 0) {
+                notifications.push({
+                    testId: test.id,
+                    testDate: test.date,
+                    stiType: test.type,
+                    stage: test.syphilisStage,
+                    titer: test.syphilisTiter,
+                    startDate: startDate.toISOString().split('T')[0],
+                    partners: partnersToNotify,
+                    notificationType: notificationType,
+                    incubationDays: getIncubationPeriod(test.type)
+                });
+            }
+        }
+        
+        // Render notifications
+        function renderNotifications() {
+            const notificationsListEl = document.getElementById('notifications-list');
+            notificationsListEl.innerHTML = '';
+            
+            if (notifications.length === 0) {
+                notificationsListEl.innerHTML = '<div class="card">No notifications required</div>';
+                
+                // Hide notification alert on dashboard
+                document.getElementById('notification-alert').classList.add('hidden');
+                return;
+            }
+            
+            // Show notification alert on dashboard
+            const alertEl = document.getElementById('notification-alert');
+            alertEl.classList.remove('hidden');
+            alertEl.className = 'notification-card';
+            alertEl.innerHTML = `
+                <div class="notification-header">Pending Notifications</div>
+                <div class="notification-body">
+                    <p>You have ${notifications.length} positive test${notifications.length > 1 ? 's' : ''} that require partner notification.</p>
+                    <button class="view-notifications-btn" onclick="switchTab('notifications')">View Notifications →</button>
+                </div>
+            `;
+            
+            notifications.forEach((notification, index) => {
+                const notificationCard = document.createElement('div');
+                notificationCard.className = 'notification-card';
+                
+                let header = `${notification.stiType} - `;
+                
+                if (notification.notificationType === 'positive') {
+                    header += `Positive on ${notification.testDate}`;
+                    if (notification.stage) {
+                        header += ` (${notification.stage} stage)`;
+                    }
+                    if (notification.titer) {
+                        header += ` (Titer: ${notification.titer})`;
+                    }
+                } else if (notification.notificationType === 'negative-incubation') {
+                    header += `Negative on ${notification.testDate} (Within Incubation Period)`;
+                    if (notification.titer) {
+                        header += ` (Titer: ${notification.titer})`;
+                    }
+                }
+                
+                let html = `<div class="notification-header">${header}</div>`;
+                html += '<div class="notification-body">';
+                
+                if (notification.notificationType === 'positive') {
+                    html += `<p><strong>Notification Period:</strong> ${notification.startDate} to ${notification.testDate}</p>`;
+                    html += `<p><strong>Reason:</strong> Positive test result requires partner notification</p>`;
+                } else if (notification.notificationType === 'negative-incubation') {
+                    html += `<p><strong>Exposure Window:</strong> ${notification.startDate} to ${notification.testDate}</p>`;
+                    html += `<p><strong>Reason:</strong> Test was taken within ${notification.incubationDays}-day incubation period. Negative result does not rule out infection from recent encounters.</p>`;
+                    html += `<p><strong>Recommendation:</strong> Partners should be notified and advised to get tested. Consider retesting after the incubation period.</p>`;
+                }
+                
+                html += '<h4 style="margin-bottom: 8px;">Partners to Notify:</h4>';
+                html += '<ul class="partner-list">';
+                
+                notification.partners.forEach(partner => {
+                    html += `<li>${partner.name}`;
+                    
+                    if (partner.phone) {
+                        html += ` - ${partner.phone}`;
+                    }
+                    
+                    if (partner.email) {
+                        html += ` - ${partner.email}`;
+                    }
+                    
+                    html += '</li>';
+                });
+                
+                html += '</ul>';
+                html += '</div>';
+                
+                notificationCard.innerHTML = html;
+                notificationsListEl.appendChild(notificationCard);
+            });
+        }
+        
+        // Render the dashboard
+        function renderDashboard() {
+            // Update stats
+            document.getElementById('partners-count').textContent = partners.length;
+            document.getElementById('encounters-count').textContent = encounters.length;
+            document.getElementById('tests-count').textContent = tests.length;
+            document.getElementById('symptoms-count').textContent = symptoms.length;
+            
+            // Render STI profiles
+            const stiProfilesEl = document.getElementById('sti-profiles');
+            stiProfilesEl.innerHTML = '';
+            
+            ['Syphilis', 'HIV', 'Chlamydia', 'Gonorrhea'].forEach(sti => {
+                const stiTests = tests.filter(test => 
+                    test.type.toLowerCase() === sti.toLowerCase()
+                );
+                const positiveTests = stiTests.filter(test => test.result === 'positive');
+                const lastTest = stiTests.length > 0 ? 
+                    stiTests.sort((a, b) => new Date(b.date) - new Date(a.date))[0] : null;
+                
+                const profileCard = document.createElement('div');
+                profileCard.className = 'profile-card';
+                profileCard.setAttribute('data-sti', sti);
+                
+                let html = `<div style="font-weight: 600;">${sti}</div>`;
+                
+                if (lastTest) {
+                    html += `
+                        <div style="font-size: 14px; ${lastTest.result === 'positive' ? 'color: #ef4444; font-weight: 600;' : 'color: #10b981;'}">
+                            Last Test: ${lastTest.result} (${lastTest.date})
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280;">
+                            ${stiTests.length} tests, ${positiveTests.length} positive
+                        </div>
+                    `;
+                } else {
+                    html += '<div style="font-size: 14px; color: #6b7280;">No tests recorded</div>';
+                }
+                
+                profileCard.innerHTML = html;
+                profileCard.addEventListener('click', () => {
+                    if (activeTab !== 'tests') {
+                        switchTab('tests');
+                    }
+                    viewStiProfile(sti);
+                });
+                
+                stiProfilesEl.appendChild(profileCard);
+            });
+            
+            // Render notification alert if needed
+            if (notifications.length > 0) {
+                const alertEl = document.getElementById('notification-alert');
+                alertEl.classList.remove('hidden');
+                alertEl.className = 'notification-card';
+                
+                const positiveNotifications = notifications.filter(n => n.notificationType === 'positive').length;
+                const incubationNotifications = notifications.filter(n => n.notificationType === 'negative-incubation').length;
+                
+                let alertText = `You have ${notifications.length} notification${notifications.length > 1 ? 's' : ''} required:`;
+                if (positiveNotifications > 0) {
+                    alertText += ` ${positiveNotifications} positive test${positiveNotifications > 1 ? 's' : ''}`;
+                }
+                if (incubationNotifications > 0) {
+                    if (positiveNotifications > 0) alertText += ' and';
+                    alertText += ` ${incubationNotifications} negative test${incubationNotifications > 1 ? 's' : ''} within incubation period`;
+                }
+                
+                alertEl.innerHTML = `
+                    <div class="notification-header">Pending Notifications</div>
+                    <div class="notification-body">
+                        <p>${alertText}</p>
+                        <button class="view-notifications-btn">View Notifications →</button>
+                    </div>
+                `;
+                
+                alertEl.querySelector('.view-notifications-btn').addEventListener('click', () => {
+                    switchTab('notifications');
+                });
+            } else {
+                document.getElementById('notification-alert').classList.add('hidden');
+            }
+            
+            // Render recent tests
+            const recentTestsEl = document.getElementById('recent-tests');
+            
+            if (tests.length === 0) {
+                recentTestsEl.innerHTML = '<div class="card">No tests recorded</div>';
+            } else {
+                const recentTests = [...tests]
+                    .sort((a, b) => new Date(b.date) - new Date(a.date))
+                    .slice(0, 3);
+                
+                recentTestsEl.innerHTML = '';
+                
+                recentTests.forEach(test => {
+                    const testCard = document.createElement('div');
+                    testCard.className = 'card';
+                    
+                    let html = `<div class="card-header">${test.date} - ${test.type} - `;
+                    html += `<span class="${test.result === 'positive' ? 'positive' : 'negative'}">${test.result.charAt(0).toUpperCase() + test.result.slice(1)}</span></div>`;
+                    html += '<div class="card-body">';
+                    
+                    if (test.type === 'Syphilis') {
+                        if (test.syphilisTiter) {
+                            html += `<div>Titer: ${test.syphilisTiter}</div>`;
+                        }
+                        if (test.syphilisStage) {
+                            html += `<div>Stage: ${test.syphilisStage}</div>`;
+                        }
+                    }
+                    
+                    if (test.result === 'positive' && test.treatmentDate) {
+                        html += `<div>Treated: ${test.treatmentDate}</div>`;
+                    }
+                    
+                    html += '</div>';
+                    
+                    testCard.innerHTML = html;
+                    recentTestsEl.appendChild(testCard);
+                });
+            }
+        }
+        
+        // Event listeners
+        
+        // Tab switching
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const tabId = button.getAttribute('data-tab');
+                switchTab(tabId);
+            });
+        });
+        
+        // Add partner
+        document.getElementById('add-partner-btn').addEventListener('click', addPartner);
+        
+        // Add encounter
+        document.getElementById('add-encounter-btn').addEventListener('click', addEncounter);
+        
+        // Test form fields handling
+        document.getElementById('test-type').addEventListener('change', handleTestFormFields);
+        document.getElementById('test-result').addEventListener('change', handleTestFormFields);
+        document.getElementById('syphilis-titer').addEventListener('change', updateSyphilisInfo);
+        document.getElementById('syphilis-stage').addEventListener('change', updateSyphilisInfo);
+        
+        // Add test
+        document.getElementById('add-test-btn').addEventListener('click', addTest);
+        
+        // Back to tests button
+        document.getElementById('back-to-tests').addEventListener('click', () => {
+            viewingStiProfile = false;
+            document.getElementById('test-form-view').classList.remove('hidden');
+            document.getElementById('sti-profile-view').classList.add('hidden');
+        });
+        
+        // STI profile buttons
+        document.querySelectorAll('.sti-profile-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                const sti = button.getAttribute('data-sti');
+                viewStiProfile(sti);
+            });
+        });
+        
+        // Symptom resolved checkbox
+        document.getElementById('symptom-resolved').addEventListener('change', toggleResolvedDateField);
+        
+        // Add symptom
+        document.getElementById('add-symptom-btn').addEventListener('click', addSymptom);
+        
+        // Initialize the application
+        loadData();
+        updateUI();
+    </script>
+</body>
+</html>

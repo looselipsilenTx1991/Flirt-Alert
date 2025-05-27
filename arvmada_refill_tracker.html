@@ -1,0 +1,1995 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARVmada - Medication Refill Tracker</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4285F4, #34A853);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .controls {
+            background: white;
+            padding: 20px;
+            margin: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .btn {
+            background: #4285F4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: #3367D6;
+        }
+
+        .btn-success {
+            background: #34A853;
+        }
+
+        .btn-success:hover {
+            background: #2E7D32;
+        }
+
+        .btn-warning {
+            background: #FBBC04;
+            color: #333;
+        }
+
+        .btn-warning:hover {
+            background: #F9AB00;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .import-export-info {
+            background: #e3f2fd;
+            border: 1px solid #90caf9;
+            border-radius: 10px;
+            margin: 20px;
+            padding: 15px;
+        }
+
+        .import-export-info h3 {
+            color: #1565c0;
+            margin-bottom: 10px;
+        }
+
+        .backup-status {
+            background: #e8f5e8;
+            border: 1px solid #4caf50;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        input, select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .tracker-container {
+            margin: 20px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .tracker-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        .tracker-table th {
+            background: #4285F4;
+            color: white;
+            padding: 8px 4px;
+            text-align: center;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .tracker-table td {
+            border: 1px solid #e0e0e0;
+            padding: 4px;
+            text-align: center;
+            min-width: 35px;
+            height: 35px;
+            position: relative;
+        }
+
+        .client-info {
+            background: #f5f5f5;
+            font-weight: bold;
+            text-align: left;
+            padding: 8px;
+            position: sticky;
+            left: 0;
+            z-index: 5;
+        }
+
+        .date-cell {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .date-cell:hover {
+            background: #e3f2fd;
+            transform: scale(1.1);
+        }
+
+        /* Status indicators */
+        .refill-completed { background: #B6D7A8 !important; }
+        .refill-eligible { background: #FCE8B2 !important; }
+        .refill-deadline { background: #F4CCCC !important; }
+        .refill-missed { background: #FF5252 !important; color: white; }
+
+        .legend {
+            background: white;
+            margin: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .legend h3 {
+            margin-bottom: 10px;
+            color: #4285F4;
+        }
+
+        .legend-items {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            border: 1px solid #ddd;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background: white;
+            margin: 15% auto;
+            padding: 30px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 500px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .interventions-panel {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            margin: 20px;
+            padding: 15px;
+        }
+
+        .interventions-panel h3 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .intervention-item {
+            background: white;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            border-left: 4px solid #FF5252;
+        }
+
+        .stats-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #4285F4;
+        }
+
+        .scrollable-table {
+            max-height: 60vh;
+            overflow: auto;
+        }
+
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: 5px;
+        }
+
+        .delete-btn:hover {
+            background: #c82333;
+        }
+
+        .client-row {
+            position: relative;
+        }
+
+        .edit-refill-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+        }
+
+        .edit-refill-content {
+            background: white;
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 600px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .refill-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+        }
+
+        .refill-supply-modal {
+            display: none;
+            position: fixed;
+            z-index: 1001;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+        }
+
+        .refill-supply-content {
+            background: white;
+            margin: 20% auto;
+            padding: 25px;
+            border-radius: 10px;
+            width: 400px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+
+        .supply-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .supply-btn {
+            background: #f0f0f0;
+            border: 2px solid #ddd;
+            padding: 15px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .supply-btn:hover {
+            background: #e3f2fd;
+            border-color: #4285F4;
+        }
+
+        .supply-btn.default {
+            background: #e8f5e8;
+            border-color: #4caf50;
+        }
+
+        .refill-item {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            cursor: pointer;
+            border: 2px solid transparent;
+            font-size: 12px;
+            position: relative;
+        }
+
+        .refill-item .supply-indicator {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: #4285F4;
+            color: white;
+            font-size: 8px;
+            padding: 1px 3px;
+            border-radius: 2px;
+        }
+
+        .refill-item:hover {
+            background: #e3f2fd;
+        }
+
+        .refill-item.selected {
+            border-color: #4285F4;
+            background: #e3f2fd;
+        }
+
+        .refill-item.completed {
+            background: #B6D7A8;
+            color: #2e7d32;
+            font-weight: bold;
+        }
+
+        .refill-item.eligible {
+            background: #FCE8B2;
+            color: #f57c00;
+        }
+
+        .refill-item.deadline {
+            background: #F4CCCC;
+            color: #d32f2f;
+        }
+
+        .refill-item.missed {
+            background: #FF5252;
+            color: white;
+            font-weight: bold;
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+
+        .quick-btn {
+            background: #f0f0f0;
+            border: 1px solid #ddd;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .quick-btn:hover {
+            background: #e0e0e0;
+        }
+
+        .client-actions {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .edit-btn {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .edit-btn:hover {
+            background: #1976D2;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>ARVmada</h1>
+        <p>Advanced Medication Refill Tracker • Track refills for up to 300 clients • Intervention alerts</p>
+    </div>
+
+    <div class="controls">
+        <button class="btn btn-success" onclick="openAddClientModal()">+ Add New Client</button>
+        <button class="btn" onclick="generateReport()">📊 Generate Report</button>
+        <button class="btn btn-warning" onclick="flagMissedRefills()">⚠️ Check Missed Refills</button>
+        <button class="btn" onclick="exportData()">📤 Export Data</button>
+        <button class="btn" onclick="document.getElementById('importFile').click()">📥 Import Data</button>
+        <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData(event)">
+        <button class="btn" onclick="clearAllData()" style="background: #dc3545;">🗑️ Clear All Data</button>
+       
+        <div class="input-group">
+            <label>Filter by month:</label>
+            <select id="monthFilter" onchange="filterByMonth()">
+                <option value="">All months</option>
+                <option value="01">January</option>
+                <option value="02">February</option>
+                <option value="03">March</option>
+                <option value="04">April</option>
+                <option value="05">May</option>
+                <option value="06">June</option>
+                <option value="07">July</option>
+                <option value="08">August</option>
+                <option value="09">September</option>
+                <option value="10">October</option>
+                <option value="11">November</option>
+                <option value="12">December</option>
+            </select>
+        </div>
+
+        <div class="input-group">
+            <label>Search client:</label>
+            <input type="text" id="clientSearch" placeholder="Enter client name..." onkeyup="searchClients()">
+        </div>
+    </div>
+
+    <div class="import-export-info">
+        <h3>💾 Data Management</h3>
+        <p>Your data is automatically saved to your browser's local storage. Use export/import to backup or transfer data between devices.</p>
+        <div class="backup-status" id="backupStatus">
+            <span id="lastSaved">Data auto-saved</span> |
+            <span id="dataSize">0 clients loaded</span>
+        </div>
+    </div>
+
+    <div class="stats-panel">
+        <div class="stat-card">
+            <div class="stat-number" id="totalClients">0</div>
+            <div>Total Clients</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="refillsToday">0</div>
+            <div>Refills Due Today</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="interventionsNeeded">0</div>
+            <div>Interventions Needed</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="adherenceRate">100%</div>
+            <div>Adherence Rate</div>
+        </div>
+    </div>
+
+    <div class="legend">
+        <h3>Status Legend</h3>
+        <div class="legend-items">
+            <div class="legend-item">
+                <div class="legend-color refill-completed"></div>
+                <span>R# - Completed Refill</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color refill-eligible"></div>
+                <span>E# - Eligible (22+ days)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color refill-deadline"></div>
+                <span>D# - Deadline (31 days)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color refill-missed"></div>
+                <span>M# - Missed (Intervention needed)</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="interventions-panel" id="interventionsPanel" style="display: none;">
+        <h3>⚠️ Clients Requiring Intervention</h3>
+        <div id="interventionsList"></div>
+    </div>
+
+    <div class="tracker-container">
+        <div class="scrollable-table">
+            <table class="tracker-table" id="trackerTable">
+                <thead id="tableHeaders"></thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Add Client Modal -->
+    <div id="addClientModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeAddClientModal()">&times;</span>
+            <h2>Add New Client</h2>
+            <form id="addClientForm" onsubmit="addClient(event)">
+                <div class="form-group">
+                <label for="editSupplyDays">Supply Days:</label>
+                <select id="editSupplyDays">
+                    <option value="10">10 days (Short-term)</option>
+                    <option value="14">14 days</option>
+                    <option value="15">15 days</option>
+                    <option value="21">21 days</option>
+                    <option value="30">30 days (Standard)</option>
+                    <option value="45">45 days</option>
+                    <option value="60">60 days</option>
+                    <option value="90">90 days</option>
+                    <option value="120">120 days (4 months)</option>
+                </select>
+                <button class="btn" onclick="updateSupplyDays()" style="margin-left: 10px;">Update Supply</button>
+            </div>
+
+            <div class="form-group">
+                    <label for="clientName">Client Name:</label>
+                    <input type="text" id="clientName" required>
+                </div>
+                <div class="form-group">
+                    <label for="startDate">Start Date:</label>
+                    <input type="date" id="startDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="medication">Medication:</label>
+                    <input type="text" id="medication" required>
+                </div>
+                <div class="form-group">
+                    <label for="supplyDays">Supply Days:</label>
+                    <select id="supplyDays" required>
+                        <option value="10">10 days (Short-term)</option>
+                        <option value="14">14 days</option>
+                        <option value="15">15 days</option>
+                        <option value="21">21 days</option>
+                        <option value="30" selected>30 days (Standard)</option>
+                        <option value="45">45 days</option>
+                        <option value="60">60 days</option>
+                        <option value="90">90 days</option>
+                        <option value="120">120 days (4 months)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="notes">Notes:</label>
+                    <textarea id="notes" rows="3" placeholder="Preferences, contact info, etc."></textarea>
+                </div>
+                <button type="submit" class="btn btn-success">Add Client</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Refills Modal -->
+    <div id="editRefillModal" class="edit-refill-modal">
+        <div class="edit-refill-content">
+            <span class="close" onclick="closeRefillEditor()">&times;</span>
+            <h2 id="editRefillTitle">Edit Refills</h2>
+           
+            <div class="form-group">
+                <label>Quick Actions:</label>
+                <div class="quick-actions">
+                    <button class="quick-btn" onclick="markRefillToday()">Mark Refill Today</button>
+                    <button class="quick-btn" onclick="addCustomRefill()">Add Custom Refill</button>
+                    <button class="quick-btn" onclick="recalculateSchedule()">Recalculate Schedule</button>
+                    <button class="quick-btn" onclick="clearAllRefills()">Clear All Refills</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Refill Calendar (Click dates to toggle):</label>
+                <div class="refill-grid" id="refillGrid">
+                    <!-- Refill dates will be populated here -->
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="customRefillDate">Add Refill on Specific Date:</label>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="date" id="customRefillDate">
+                    <button class="btn" onclick="addRefillOnDate()">Add Refill</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="newStartDate">Change Start Date (Recalculates All):</label>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="date" id="newStartDate">
+                    <button class="btn" onclick="changeStartDate()">Update Start Date</button>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="btn btn-success" onclick="closeRefillEditor()">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Refill Supply Selection Modal -->
+    <div id="refillSupplyModal" class="refill-supply-modal">
+        <div class="refill-supply-content">
+            <h3>Select Supply for Refill</h3>
+            <p id="refillSupplyInfo">Choose supply days for this specific refill</p>
+           
+            <div class="supply-options">
+                <button class="supply-btn" onclick="selectSupplyAndAddRefill(10)">10 days</button>
+                <button class="supply-btn" onclick="selectSupplyAndAddRefill(14)">14 days</button>
+                <button class="supply-btn" onclick="selectSupplyAndAddRefill(15)">15 days</button>
+                <button class="supply-btn" onclick="selectSupplyAndAddRefill(21)">21 days</button>
+                <button class="supply-btn default" onclick="selectSupplyAndAddRefill(30)">30 days<br><small>(Default)</small></button>
+                <button class="supply-btn" onclick="selectSupplyAndAddRefill(45)">45 days</button>
+                <button class="supply-btn" onclick="selectSupplyAndAddRefill(60)">60 days</button>
+                <button class="supply-btn" onclick="selectSupplyAndAddRefill(90)">90 days</button>
+                <button class="supply-btn" onclick="selectSupplyAndAddRefill(120)">120 days</button>
+            </div>
+           
+            <div style="margin-top: 20px;">
+                <button class="btn" onclick="closeSupplyModal()" style="background: #666;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let clients = [];
+        let refillData = {};
+        let currentYear = 2025;
+        const STORAGE_KEY = 'arvmadaRefillTracker';
+
+        // Initialize the application
+        function init() {
+            generateCalendarHeaders();
+            loadDataFromStorage();
+            if (clients.length === 0) {
+                loadSampleData();
+            }
+            updateStats();
+            checkTodaysRefills();
+            updateBackupStatus();
+        }
+
+        // Load data from localStorage
+        function loadDataFromStorage() {
+            try {
+                const savedData = localStorage.getItem(STORAGE_KEY);
+                if (savedData) {
+                    const data = JSON.parse(savedData);
+                    clients = data.clients || [];
+                    refillData = data.refillData || {};
+                    currentYear = data.currentYear || 2025;
+                   
+                    console.log(`Loaded ${clients.length} clients from local storage`);
+                    renderTable();
+                }
+            } catch (error) {
+                console.error('Error loading data from storage:', error);
+                showNotification('Error loading saved data. Starting fresh.', 'error');
+            }
+        }
+
+        // Save data to localStorage
+        function saveDataToStorage() {
+            try {
+                const dataToSave = {
+                    clients: clients,
+                    refillData: refillData,
+                    currentYear: currentYear,
+                    lastSaved: new Date().toISOString()
+                };
+               
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+                updateBackupStatus();
+                console.log('Data saved to local storage');
+            } catch (error) {
+                console.error('Error saving data to storage:', error);
+                showNotification('Error saving data. Please export as backup.', 'error');
+            }
+        }
+
+        // Export data as JSON file
+        function exportData() {
+            try {
+                const dataToExport = {
+                    clients: clients,
+                    refillData: refillData,
+                    currentYear: currentYear,
+                    exportDate: new Date().toISOString(),
+                    version: '1.0'
+                };
+               
+                const jsonString = JSON.stringify(dataToExport, null, 2);
+                const blob = new Blob([jsonString], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+               
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `arvmada-backup-${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+               
+                showNotification('Data exported successfully!', 'success');
+            } catch (error) {
+                console.error('Error exporting data:', error);
+                showNotification('Error exporting data. Please try again.', 'error');
+            }
+        }
+
+        // Import data from JSON file
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+           
+            if (!file.name.endsWith('.json')) {
+                showNotification('Please select a valid JSON file.', 'error');
+                return;
+            }
+           
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                   
+                    // Validate imported data structure
+                    if (!importedData.clients || !importedData.refillData) {
+                        throw new Error('Invalid file format');
+                    }
+                   
+                    // Ask for confirmation
+                    const confirmMsg = `This will replace your current data with ${importedData.clients.length} clients. Continue?`;
+                    if (confirm(confirmMsg)) {
+                        clients = importedData.clients;
+                        refillData = importedData.refillData;
+                        currentYear = importedData.currentYear || 2025;
+                       
+                        saveDataToStorage();
+                        renderTable();
+                        updateStats();
+                       
+                        showNotification(`Successfully imported ${clients.length} clients!`, 'success');
+                    }
+                } catch (error) {
+                    console.error('Error importing data:', error);
+                    showNotification('Error importing data. Please check the file format.', 'error');
+                }
+            };
+           
+            reader.readAsText(file);
+            // Reset file input
+            event.target.value = '';
+        }
+
+        let currentEditingClientId = null;
+        let pendingRefillDate = null;
+        let pendingRefillContext = null; // 'main' or 'editor'
+
+        // Open refill editor for a specific client
+        function openRefillEditor(clientId) {
+            currentEditingClientId = clientId;
+            const client = clients.find(c => c.id === clientId);
+           
+            if (!client) {
+                showNotification('Client not found.', 'error');
+                return;
+            }
+           
+            document.getElementById('editRefillTitle').textContent = `Edit Refills for ${client.name}`;
+            document.getElementById('newStartDate').value = client.startDate;
+            document.getElementById('editSupplyDays').value = client.supplyDays || 30;
+            document.getElementById('customRefillDate').value = new Date().toISOString().split('T')[0];
+           
+            populateRefillGrid(clientId);
+            document.getElementById('editRefillModal').style.display = 'block';
+        }
+
+        // Close refill editor
+        function closeRefillEditor() {
+            document.getElementById('editRefillModal').style.display = 'none';
+            currentEditingClientId = null;
+            renderTable();
+            updateStats();
+        }
+
+        // Populate the refill grid with all dates for the year
+        function populateRefillGrid(clientId) {
+            const grid = document.getElementById('refillGrid');
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+            const client = clients.find(c => c.id === clientId);
+           
+            let gridHTML = '';
+           
+            for (let month = 0; month < 12; month++) {
+                for (let day = 1; day <= daysInMonth[month]; day++) {
+                    const dateKey = `${months[month]}-${day.toString().padStart(2, '0')}`;
+                    const status = refillData[clientId][dateKey] || '';
+                    const cssClass = getRefillItemClass(status);
+                   
+                    // Get supply for this specific refill if it exists
+                    const supply = client?.refillSupplies?.[dateKey];
+                    const supplyIndicator = supply ? `<span class="supply-indicator">${supply}d</span>` : '';
+                   
+                    gridHTML += `
+                        <div class="refill-item ${cssClass}" onclick="toggleRefillInEditor('${dateKey}')" title="${dateKey}${supply ? ` (${supply} days)` : ''}">
+                            ${supplyIndicator}
+                            <div style="font-weight: bold;">${dateKey}</div>
+                            <div>${status || '—'}</div>
+                        </div>
+                    `;
+                }
+            }
+           
+            grid.innerHTML = gridHTML;
+        }
+
+        // Get CSS class for refill items
+        function getRefillItemClass(status) {
+            if (status.startsWith('R')) return 'completed';
+            if (status.startsWith('E')) return 'eligible';
+            if (status.startsWith('D')) return 'deadline';
+            if (status.startsWith('M')) return 'missed';
+            return '';
+        }
+
+        // Toggle refill in the editor
+        function toggleRefillInEditor(dateKey) {
+            if (!currentEditingClientId) return;
+           
+            const currentStatus = refillData[currentEditingClientId][dateKey] || '';
+           
+            if (currentStatus === '') {
+                // Show supply selection modal
+                showSupplySelectionModal(currentEditingClientId, dateKey, 'editor');
+               
+            } else if (currentStatus.startsWith('R')) {
+                const refillNum = parseInt(currentStatus.substring(1));
+                delete refillData[currentEditingClientId][dateKey];
+               
+                // Remove supply tracking
+                const client = clients.find(c => c.id === currentEditingClientId);
+                if (client && client.refillSupplies) {
+                    delete client.refillSupplies[dateKey];
+                }
+               
+                showNotification(`Removed refill R${refillNum} on ${dateKey}`, 'info');
+               
+                // Recalculate and check for missed deadlines
+                recalculateAfterRefillRemoval(currentEditingClientId, refillNum);
+               
+            } else {
+                // Show supply selection modal for E/D/M conversion
+                showSupplySelectionModal(currentEditingClientId, dateKey, 'editor');
+            }
+           
+            saveDataToStorage();
+            populateRefillGrid(currentEditingClientId);
+        }
+
+        // Mark refill for today
+        function markRefillToday() {
+            if (!currentEditingClientId) return;
+           
+            const today = new Date();
+            const todayKey = formatDateKey(today);
+            showSupplySelectionModal(currentEditingClientId, todayKey, 'editor');
+        }
+
+        // Add refill on specific date
+        function addRefillOnDate() {
+            if (!currentEditingClientId) return;
+           
+            const dateInput = document.getElementById('customRefillDate').value;
+            if (!dateInput) {
+                showNotification('Please select a date.', 'error');
+                return;
+            }
+           
+            const selectedDate = new Date(dateInput);
+            const dateKey = formatDateKey(selectedDate);
+            showSupplySelectionModal(currentEditingClientId, dateKey, 'editor');
+        }
+
+        // Update supply days for current client
+        function updateSupplyDays() {
+            if (!currentEditingClientId) return;
+           
+            const client = clients.find(c => c.id === currentEditingClientId);
+            if (!client) return;
+           
+            const newSupplyDays = parseInt(document.getElementById('editSupplyDays').value);
+            const oldSupplyDays = client.supplyDays || 30;
+           
+            if (newSupplyDays === oldSupplyDays) {
+                showNotification('Supply days unchanged.', 'info');
+                return;
+            }
+           
+            const confirmMsg = `Change ${client.name}'s supply from ${oldSupplyDays} days to ${newSupplyDays} days and recalculate schedule?`;
+           
+            if (confirm(confirmMsg)) {
+                // Update client supply days
+                client.supplyDays = newSupplyDays;
+               
+                // Clear existing eligible/deadline data but keep completed refills
+                Object.keys(refillData[currentEditingClientId]).forEach(dateKey => {
+                    const status = refillData[currentEditingClientId][dateKey];
+                    if (status.startsWith('E') || status.startsWith('D') || status.startsWith('M')) {
+                        delete refillData[currentEditingClientId][dateKey];
+                    }
+                });
+               
+                // Find last completed refill to base new schedule on
+                const completedRefills = Object.entries(refillData[currentEditingClientId])
+                    .filter(([key, value]) => value.startsWith('R'))
+                    .sort((a, b) => parseDate(a[0]) - parseDate(b[0]));
+               
+                if (completedRefills.length > 0) {
+                    const lastRefillDate = parseDate(completedRefills[completedRefills.length - 1][0]);
+                    const lastRefillNum = parseInt(completedRefills[completedRefills.length - 1][1].substring(1));
+                   
+                    // Recalculate from last refill
+                    calculateScheduleFromDate(currentEditingClientId, lastRefillDate, lastRefillNum, newSupplyDays);
+                } else {
+                    // No refills yet, recalculate from start date
+                    calculateRefillSchedule(currentEditingClientId, new Date(client.startDate), newSupplyDays);
+                }
+               
+                saveDataToStorage();
+                populateRefillGrid(currentEditingClientId);
+                renderTable();
+               
+                showNotification(`Supply updated to ${newSupplyDays} days and schedule recalculated`, 'success');
+            }
+        }
+
+        // Calculate schedule from a specific date and refill number
+        function calculateScheduleFromDate(clientId, fromDate, fromRefillNum, supplyDays) {
+            const supply = supplyDays || 30;
+           
+            // Calculate timing based on supply length
+            let eligibleDays, deadlineDays;
+           
+            if (supply <= 15) {
+                eligibleDays = Math.floor(supply * 0.7);
+                deadlineDays = supply + 1;
+            } else if (supply <= 30) {
+                eligibleDays = Math.min(22, Math.floor(supply * 0.7));
+                deadlineDays = supply + 1;
+            } else {
+                eligibleDays = Math.floor(supply * 0.8);
+                deadlineDays = supply + 2;
+            }
+           
+            let currentDate = new Date(fromDate);
+           
+            // Calculate next 6 refill cycles
+            for (let refillNum = fromRefillNum + 1; refillNum <= fromRefillNum + 6; refillNum++) {
+                // Eligible date
+                const eligibleDate = new Date(currentDate);
+                eligibleDate.setDate(eligibleDate.getDate() + eligibleDays);
+                const eligibleKey = formatDateKey(eligibleDate);
+                if (eligibleDate.getFullYear() === currentYear) {
+                    refillData[clientId][eligibleKey] = `E${refillNum}`;
+                }
+               
+                // Deadline date
+                const deadlineDate = new Date(currentDate);
+                deadlineDate.setDate(deadlineDate.getDate() + deadlineDays);
+                const deadlineKey = formatDateKey(deadlineDate);
+                if (deadlineDate.getFullYear() === currentYear) {
+                    refillData[clientId][deadlineKey] = `D${refillNum}`;
+                }
+               
+                // Move to next cycle
+                currentDate = new Date(eligibleDate);
+                currentDate.setDate(currentDate.getDate() + 2);
+            }
+        }
+
+        // Change client start date and recalculate everything
+        function changeStartDate() {
+            if (!currentEditingClientId) return;
+           
+            const newDateInput = document.getElementById('newStartDate').value;
+            if (!newDateInput) {
+                showNotification('Please select a new start date.', 'error');
+                return;
+            }
+           
+            const client = clients.find(c => c.id === currentEditingClientId);
+            if (!client) return;
+           
+            const confirmMsg = `This will change ${client.name}'s start date from ${client.startDate} to ${newDateInput} and recalculate their entire refill schedule. Continue?`;
+           
+            if (confirm(confirmMsg)) {
+                // Update client start date
+                client.startDate = newDateInput;
+               
+                // Clear existing refill data
+                refillData[currentEditingClientId] = {};
+               
+                // Recalculate schedule
+                calculateRefillSchedule(currentEditingClientId, new Date(newDateInput), client.supplyDays);
+               
+                saveDataToStorage();
+                populateRefillGrid(currentEditingClientId);
+               
+                showNotification(`Start date updated and schedule recalculated for ${client.name}`, 'success');
+            }
+        }
+
+        // Recalculate schedule based on existing refills
+        function recalculateSchedule() {
+            if (!currentEditingClientId) return;
+           
+            const client = clients.find(c => c.id === currentEditingClientId);
+            if (!client) return;
+           
+            const confirmMsg = `This will recalculate ${client.name}'s schedule based on their current refills. Continue?`;
+           
+            if (confirm(confirmMsg)) {
+                // Find all completed refills
+                const completedRefills = Object.entries(refillData[currentEditingClientId])
+                    .filter(([key, value]) => value.startsWith('R'))
+                    .sort((a, b) => parseDate(a[0]) - parseDate(b[0]));
+               
+                if (completedRefills.length === 0) {
+                    showNotification('No completed refills found to base calculation on.', 'error');
+                    return;
+                }
+               
+                // Clear all E, D, M entries but keep R entries
+                Object.keys(refillData[currentEditingClientId]).forEach(dateKey => {
+                    const status = refillData[currentEditingClientId][dateKey];
+                    if (!status.startsWith('R')) {
+                        delete refillData[currentEditingClientId][dateKey];
+                    }
+                });
+               
+                // Recalculate based on last refill with current supply days
+                const lastRefillDate = parseDate(completedRefills[completedRefills.length - 1][0]);
+                const lastRefillNum = parseInt(completedRefills[completedRefills.length - 1][1].substring(1));
+               
+                calculateScheduleFromDate(currentEditingClientId, lastRefillDate, lastRefillNum, client.supplyDays);
+               
+                saveDataToStorage();
+                populateRefillGrid(currentEditingClientId);
+               
+                showNotification(`Schedule recalculated for ${client.name}`, 'success');
+            }
+        }
+
+        // Clear all refills for client
+        function clearAllRefills() {
+            if (!currentEditingClientId) return;
+           
+            const client = clients.find(c => c.id === currentEditingClientId);
+            if (!client) return;
+           
+            const confirmMsg = `This will clear ALL refill data for ${client.name}. Continue?`;
+           
+            if (confirm(confirmMsg)) {
+                refillData[currentEditingClientId] = {};
+                saveDataToStorage();
+                populateRefillGrid(currentEditingClientId);
+               
+                showNotification(`All refill data cleared for ${client.name}`, 'success');
+            }
+        }
+
+        // Delete a specific client
+        function deleteClient(clientId) {
+            const client = clients.find(c => c.id === clientId);
+            if (!client) {
+                showNotification('Client not found.', 'error');
+                return;
+            }
+           
+            const confirmMsg = `Are you sure you want to delete "${client.name}"?
+
+This will permanently remove:
+• All their refill data
+• Their entire medication history
+• This action cannot be undone`;
+           
+            if (confirm(confirmMsg)) {
+                // Remove client from clients array
+                clients = clients.filter(c => c.id !== clientId);
+               
+                // Remove all refill data for this client
+                delete refillData[clientId];
+               
+                // Save changes
+                saveDataToStorage();
+               
+                // Re-render table and update stats
+                renderTable();
+                updateStats();
+                updateBackupStatus();
+               
+                showNotification(`${client.name} has been deleted successfully.`, 'success');
+               
+                // If no clients left, hide interventions panel
+                if (clients.length === 0) {
+                    document.getElementById('interventionsPanel').style.display = 'none';
+                }
+            }
+        }
+
+        // Clear all data
+        function clearAllData() {
+            const confirmMsg = 'This will permanently delete all client data. Are you sure?';
+            if (confirm(confirmMsg)) {
+                const doubleConfirm = 'Type "DELETE" to confirm permanent deletion:';
+                const userInput = prompt(doubleConfirm);
+               
+                if (userInput === 'DELETE') {
+                    clients = [];
+                    refillData = {};
+                    localStorage.removeItem(STORAGE_KEY);
+                    renderTable();
+                    updateStats();
+                    updateBackupStatus();
+                    showNotification('All data has been cleared.', 'success');
+                } else {
+                    showNotification('Data clearing cancelled.', 'info');
+                }
+            }
+        }
+
+        // Update backup status display
+        function updateBackupStatus() {
+            const lastSavedElement = document.getElementById('lastSaved');
+            const dataSizeElement = document.getElementById('dataSize');
+           
+            try {
+                const savedData = localStorage.getItem(STORAGE_KEY);
+                if (savedData) {
+                    const data = JSON.parse(savedData);
+                    const lastSaved = data.lastSaved ? new Date(data.lastSaved).toLocaleString() : 'Unknown';
+                    lastSavedElement.textContent = `Last saved: ${lastSaved}`;
+                } else {
+                    lastSavedElement.textContent = 'No data saved yet';
+                }
+            } catch (error) {
+                lastSavedElement.textContent = 'Error reading save data';
+            }
+           
+            dataSizeElement.textContent = `${clients.length} clients loaded`;
+        }
+
+        // Show notification to user
+        function showNotification(message, type = 'info') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                border-radius: 5px;
+                color: white;
+                font-weight: bold;
+                z-index: 10000;
+                max-width: 300px;
+                word-wrap: break-word;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                transition: all 0.3s ease;
+            `;
+           
+            // Set color based on type
+            switch (type) {
+                case 'success':
+                    notification.style.backgroundColor = '#4caf50';
+                    break;
+                case 'error':
+                    notification.style.backgroundColor = '#f44336';
+                    break;
+                case 'warning':
+                    notification.style.backgroundColor = '#ff9800';
+                    break;
+                default:
+                    notification.style.backgroundColor = '#2196f3';
+            }
+           
+            notification.textContent = message;
+            document.body.appendChild(notification);
+           
+            // Remove notification after 4 seconds
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 4000);
+        }
+
+        // Generate calendar headers for the year
+        function generateCalendarHeaders() {
+            const headerRow = document.getElementById('tableHeaders');
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+           
+            let headers = '<tr>';
+            headers += '<th style="width: 40px;">ID</th>';
+            headers += '<th style="width: 130px;">Client Name</th>';
+            headers += '<th style="width: 90px;">Start Date</th>';
+            headers += '<th style="width: 100px;">Medication</th>';
+            headers += '<th style="width: 70px;">Supply</th>';
+            headers += '<th style="width: 80px;">Actions</th>';
+           
+            // Add date columns
+            for (let month = 0; month < 12; month++) {
+                for (let day = 1; day <= daysInMonth[month]; day++) {
+                    const dateStr = `${months[month]}-${day.toString().padStart(2, '0')}`;
+                    headers += `<th style="width: 35px; font-size: 10px;">${dateStr}</th>`;
+                }
+            }
+           
+            headers += '</tr>';
+            headerRow.innerHTML = headers;
+        }
+
+        // Add sample data for demonstration
+        function loadSampleData() {
+            const sampleClients = [
+                { name: 'John Doe', startDate: '2025-01-15', medication: 'Medication A', supplyDays: 30, notes: 'Prefers phone reminders' },
+                { name: 'Jane Smith', startDate: '2025-02-01', medication: 'Medication B', supplyDays: 60, notes: 'Email notifications' },
+                { name: 'Mike Johnson', startDate: '2025-01-22', medication: 'Medication C', supplyDays: 90, notes: 'Text messages only' },
+                { name: 'Sarah Wilson', startDate: '2025-03-10', medication: 'Medication D', supplyDays: 30, notes: 'Family member contact' }
+            ];
+
+            sampleClients.forEach(client => {
+                addClientToSystem(client.name, client.startDate, client.medication, client.supplyDays, client.notes);
+            });
+        }
+
+        // Open add client modal
+        function openAddClientModal() {
+            document.getElementById('addClientModal').style.display = 'block';
+            document.getElementById('startDate').value = new Date().toISOString().split('T')[0];
+        }
+
+        // Close add client modal
+        function closeAddClientModal() {
+            document.getElementById('addClientModal').style.display = 'none';
+            document.getElementById('addClientForm').reset();
+        }
+
+        // Add new client
+        function addClient(event) {
+            event.preventDefault();
+           
+            const name = document.getElementById('clientName').value;
+            const startDate = document.getElementById('startDate').value;
+            const medication = document.getElementById('medication').value;
+            const supplyDays = parseInt(document.getElementById('supplyDays').value);
+            const notes = document.getElementById('notes').value;
+           
+            addClientToSystem(name, startDate, medication, supplyDays, notes);
+            closeAddClientModal();
+        }
+
+        // Add client to the system
+        function addClientToSystem(name, startDate, medication, supplyDays, notes) {
+            const clientId = clients.length + 1;
+            const client = {
+                id: clientId,
+                name: name,
+                startDate: startDate,
+                medication: medication,
+                supplyDays: supplyDays || 30,
+                notes: notes,
+                refillSupplies: {} // Track individual refill supplies
+            };
+           
+            clients.push(client);
+            refillData[clientId] = {};
+           
+            // Calculate initial refill schedule based on supply days
+            calculateRefillSchedule(clientId, new Date(startDate), supplyDays);
+           
+            // Save to storage and re-render the table
+            saveDataToStorage();
+            renderTable();
+            updateStats();
+           
+            showNotification(`${name} added successfully with ${supplyDays}-day supply!`, 'success');
+        }
+
+        // Calculate refill schedule for a client
+        function calculateRefillSchedule(clientId, startDate, supplyDays) {
+            const client = clients.find(c => c.id === clientId);
+            const supply = supplyDays || client?.supplyDays || 30;
+           
+            // Calculate eligible and deadline days based on supply
+            let eligibleDays, deadlineDays;
+           
+            if (supply <= 15) {
+                // Short supplies: eligible after 70% of supply, deadline at 100% + 1 day
+                eligibleDays = Math.floor(supply * 0.7);
+                deadlineDays = supply + 1;
+            } else if (supply <= 30) {
+                // Standard supplies: eligible after 22 days or 70% (whichever is less), deadline at supply + 1
+                eligibleDays = Math.min(22, Math.floor(supply * 0.7));
+                deadlineDays = supply + 1;
+            } else {
+                // Longer supplies: eligible after 80% of supply, deadline at supply + 2
+                eligibleDays = Math.floor(supply * 0.8);
+                deadlineDays = supply + 2;
+            }
+           
+            const dateKey = formatDateKey(startDate);
+            refillData[clientId][dateKey] = 'R1';
+           
+            // Calculate next 12 refill cycles
+            let currentDate = new Date(startDate);
+            for (let refillNum = 2; refillNum <= 13; refillNum++) {
+                // Eligible date
+                const eligibleDate = new Date(currentDate);
+                eligibleDate.setDate(eligibleDate.getDate() + eligibleDays);
+                const eligibleKey = formatDateKey(eligibleDate);
+                if (eligibleDate.getFullYear() === currentYear) {
+                    refillData[clientId][eligibleKey] = `E${refillNum}`;
+                }
+               
+                // Deadline date
+                const deadlineDate = new Date(currentDate);
+                deadlineDate.setDate(deadlineDate.getDate() + deadlineDays);
+                const deadlineKey = formatDateKey(deadlineDate);
+                if (deadlineDate.getFullYear() === currentYear) {
+                    refillData[clientId][deadlineKey] = `D${refillNum}`;
+                }
+               
+                // Move to next cycle (assuming they refill on eligible date + 2 days)
+                currentDate = new Date(eligibleDate);
+                currentDate.setDate(currentDate.getDate() + 2);
+                const nextRefillKey = formatDateKey(currentDate);
+                if (currentDate.getFullYear() === currentYear && currentDate <= deadlineDate) {
+                    refillData[clientId][nextRefillKey] = `R${refillNum}`;
+                }
+            }
+        }
+
+        // Format date as key
+        function formatDateKey(date) {
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            return `${months[date.getMonth()]}-${date.getDate().toString().padStart(2, '0')}`;
+        }
+
+        // Render the tracking table
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+           
+            let tableHTML = '';
+           
+            clients.forEach(client => {
+                tableHTML += '<tr class="client-row">';
+                tableHTML += `<td class="client-info">${client.id}</td>`;
+                tableHTML += `<td class="client-info">${client.name}</td>`;
+                tableHTML += `<td class="client-info">${client.startDate}</td>`;
+                tableHTML += `<td class="client-info">${client.medication}</td>`;
+                tableHTML += `<td class="client-info">${client.supplyDays || 30}d</td>`;
+                tableHTML += `<td class="client-info">
+                    <div class="client-actions">
+                        <button class="edit-btn" onclick="openRefillEditor(${client.id})" title="Edit refills for ${client.name}">
+                            ✏️
+                        </button>
+                        <button class="delete-btn" onclick="deleteClient(${client.id})" title="Delete ${client.name}">
+                            🗑️
+                        </button>
+                    </div>
+                </td>`;
+               
+                // Add date cells
+                for (let month = 0; month < 12; month++) {
+                    for (let day = 1; day <= daysInMonth[month]; day++) {
+                        const dateKey = `${months[month]}-${day.toString().padStart(2, '0')}`;
+                        const cellData = refillData[client.id][dateKey] || '';
+                        const cellClass = getCellClass(cellData);
+                       
+                        tableHTML += `<td class="date-cell ${cellClass}"
+                                        onclick="toggleRefill(${client.id}, '${dateKey}')"
+                                        title="Client: ${client.name}, Date: ${dateKey}">
+                                        ${cellData}
+                                      </td>`;
+                    }
+                }
+               
+                tableHTML += '</tr>';
+            });
+           
+            tbody.innerHTML = tableHTML;
+        }
+
+        // Get CSS class for cell based on status
+        function getCellClass(status) {
+            if (status.startsWith('R')) return 'refill-completed';
+            if (status.startsWith('E')) return 'refill-eligible';
+            if (status.startsWith('D')) return 'refill-deadline';
+            if (status.startsWith('M')) return 'refill-missed';
+            return '';
+        }
+
+        // Toggle refill status when cell is clicked
+        function toggleRefill(clientId, dateKey) {
+            const currentStatus = refillData[clientId][dateKey] || '';
+           
+            if (currentStatus === '') {
+                // Show supply selection modal for new refill
+                showSupplySelectionModal(clientId, dateKey, 'main');
+               
+            } else if (currentStatus.startsWith('R')) {
+                // Remove refill - need to check for missed deadlines
+                const refillNum = parseInt(currentStatus.substring(1));
+                delete refillData[clientId][dateKey];
+               
+                // Remove supply tracking for this refill
+                const client = clients.find(c => c.id === clientId);
+                if (client && client.refillSupplies) {
+                    delete client.refillSupplies[dateKey];
+                }
+               
+                // Recalculate schedule and check for missed deadlines
+                recalculateAfterRefillRemoval(clientId, refillNum);
+                showNotification(`Refill R${refillNum} removed - checking for missed deadlines`, 'warning');
+               
+            } else if (currentStatus.startsWith('E') || currentStatus.startsWith('D') || currentStatus.startsWith('M')) {
+                // Show supply selection modal for converting E/D/M to completed refill
+                showSupplySelectionModal(clientId, dateKey, 'main');
+            }
+           
+            saveDataToStorage();
+            renderTable();
+            updateStats();
+        }
+
+        // Show supply selection modal
+        function showSupplySelectionModal(clientId, dateKey, context) {
+            const client = clients.find(c => c.id === clientId);
+            if (!client) return;
+           
+            pendingRefillDate = dateKey;
+            currentEditingClientId = clientId;
+            pendingRefillContext = context;
+           
+            const currentStatus = refillData[clientId][dateKey] || '';
+            const refillNum = currentStatus ? currentStatus.substring(1) : getNextRefillNumber(clientId, dateKey);
+           
+            document.getElementById('refillSupplyInfo').textContent =
+                `${client.name} - Refill R${refillNum} on ${dateKey}`;
+           
+            // Highlight default supply
+            document.querySelectorAll('.supply-btn').forEach(btn => {
+                btn.classList.remove('default');
+            });
+           
+            // Mark client's default supply as default
+            const defaultSupply = client.supplyDays || 30;
+            document.querySelectorAll('.supply-btn').forEach(btn => {
+                if (btn.textContent.includes(`${defaultSupply} days`)) {
+                    btn.classList.add('default');
+                }
+            });
+           
+            document.getElementById('refillSupplyModal').style.display = 'block';
+        }
+
+        // Close supply selection modal
+        function closeSupplyModal() {
+            document.getElementById('refillSupplyModal').style.display = 'none';
+            pendingRefillDate = null;
+            pendingRefillContext = null;
+        }
+
+        // Select supply and add refill
+        function selectSupplyAndAddRefill(supplyDays) {
+            if (!currentEditingClientId || !pendingRefillDate) return;
+           
+            const client = clients.find(c => c.id === currentEditingClientId);
+            if (!client) return;
+           
+            const currentStatus = refillData[currentEditingClientId][pendingRefillDate] || '';
+            const refillNum = currentStatus ? parseInt(currentStatus.substring(1)) : getNextRefillNumber(currentEditingClientId, pendingRefillDate);
+           
+            // Add the refill
+            refillData[currentEditingClientId][pendingRefillDate] = `R${refillNum}`;
+           
+            // Track the supply for this specific refill
+            if (!client.refillSupplies) client.refillSupplies = {};
+            client.refillSupplies[pendingRefillDate] = supplyDays;
+           
+            // Clear any future E/D/M for this refill cycle and recalculate with custom supply
+            clearFutureMarksForRefill(currentEditingClientId, refillNum);
+            recalculateFromNewRefillWithSupply(currentEditingClientId, pendingRefillDate, refillNum, supplyDays);
+           
+            closeSupplyModal();
+            saveDataToStorage();
+           
+            if (pendingRefillContext === 'editor') {
+                populateRefillGrid(currentEditingClientId);
+            } else {
+                renderTable();
+            }
+            updateStats();
+           
+            showNotification(`Refill R${refillNum} added with ${supplyDays}-day supply!`, 'success');
+        }
+
+        // Recalculate schedule from a new refill with specific supply
+        function recalculateFromNewRefillWithSupply(clientId, refillDateKey, refillNum, supplyDays) {
+            const refillDate = parseDate(refillDateKey);
+           
+            // Clear future E/D/M marks for subsequent refills
+            Object.keys(refillData[clientId]).forEach(dateKey => {
+                const status = refillData[clientId][dateKey];
+                if ((status.startsWith('E') || status.startsWith('D') || status.startsWith('M')) &&
+                    parseInt(status.substring(1)) > refillNum) {
+                    delete refillData[clientId][dateKey];
+                }
+            });
+           
+            // Calculate new schedule from this refill using the specific supply
+            calculateScheduleFromDate(clientId, refillDate, refillNum, supplyDays);
+        }
+
+        // Recalculate schedule after a refill is removed
+        function recalculateAfterRefillRemoval(clientId, removedRefillNum) {
+            const client = clients.find(c => c.id === clientId);
+            if (!client) return;
+           
+            // Clear all E/D/M marks for this refill number and higher
+            Object.keys(refillData[clientId]).forEach(dateKey => {
+                const status = refillData[clientId][dateKey];
+                if ((status.startsWith('E') || status.startsWith('D') || status.startsWith('M')) &&
+                    parseInt(status.substring(1)) >= removedRefillNum) {
+                    delete refillData[clientId][dateKey];
+                }
+            });
+           
+            // Find the last completed refill before the removed one
+            const completedRefills = Object.entries(refillData[clientId])
+                .filter(([key, value]) => value.startsWith('R') && parseInt(value.substring(1)) < removedRefillNum)
+                .sort((a, b) => parseDate(a[0]) - parseDate(b[0]));
+           
+            if (completedRefills.length > 0) {
+                // Recalculate from last valid refill
+                const lastRefillDate = parseDate(completedRefills[completedRefills.length - 1][0]);
+                const lastRefillNum = parseInt(completedRefills[completedRefills.length - 1][1].substring(1));
+               
+                calculateScheduleFromDate(clientId, lastRefillDate, lastRefillNum, client.supplyDays);
+            } else {
+                // No valid refills left, recalculate from start date
+                calculateRefillSchedule(clientId, new Date(client.startDate), client.supplyDays);
+            }
+           
+            // Check for missed deadlines
+            checkAndMarkMissedDeadlines(clientId);
+        }
+
+        // Check for missed deadlines and mark them
+        function checkAndMarkMissedDeadlines(clientId) {
+            const today = new Date();
+            let missedCount = 0;
+           
+            Object.keys(refillData[clientId]).forEach(dateKey => {
+                const status = refillData[clientId][dateKey];
+                if (status.startsWith('D')) {
+                    // Check if deadline has passed
+                    const deadlineDate = parseDate(dateKey);
+                    if (deadlineDate < today) {
+                        const refillNum = status.substring(1);
+                        refillData[clientId][dateKey] = `M${refillNum}`;
+                        missedCount++;
+                    }
+                }
+            });
+           
+            if (missedCount > 0) {
+                const client = clients.find(c => c.id === clientId);
+                showNotification(`${client?.name}: ${missedCount} missed deadline(s) detected!`, 'error');
+            }
+        }
+
+        // Clear future eligible/deadline/missed marks for a specific refill
+        function clearFutureMarksForRefill(clientId, refillNum) {
+            Object.keys(refillData[clientId]).forEach(dateKey => {
+                const status = refillData[clientId][dateKey];
+                if ((status.startsWith('E') || status.startsWith('D') || status.startsWith('M')) &&
+                    parseInt(status.substring(1)) === parseInt(refillNum)) {
+                    delete refillData[clientId][dateKey];
+                }
+            });
+        }
+
+        // Recalculate schedule from a new refill
+        function recalculateFromNewRefill(clientId, refillDateKey, refillNum) {
+            const client = clients.find(c => c.id === clientId);
+            if (!client) return;
+           
+            const refillDate = parseDate(refillDateKey);
+            const supply = client.supplyDays || 30;
+           
+            // Clear future E/D/M marks for subsequent refills
+            Object.keys(refillData[clientId]).forEach(dateKey => {
+                const status = refillData[clientId][dateKey];
+                if ((status.startsWith('E') || status.startsWith('D') || status.startsWith('M')) &&
+                    parseInt(status.substring(1)) > refillNum) {
+                    delete refillData[clientId][dateKey];
+                }
+            });
+           
+            // Calculate new schedule from this refill
+            calculateScheduleFromDate(clientId, refillDate, refillNum, supply);
+        }
+
+        // Get next refill number for a client
+        function getNextRefillNumber(clientId, dateKey) {
+            const existingRefills = Object.values(refillData[clientId])
+                .filter(status => status.startsWith('R'))
+                .map(status => parseInt(status.substring(1)))
+                .sort((a, b) => a - b);
+           
+            if (existingRefills.length === 0) return 1;
+            return existingRefills[existingRefills.length - 1] + 1;
+        }
+
+        // Update statistics
+        function updateStats() {
+            document.getElementById('totalClients').textContent = clients.length;
+           
+            // Count refills due today
+            const today = new Date();
+            const todayKey = formatDateKey(today);
+            let refillsToday = 0;
+            let interventionsNeeded = 0;
+            let totalRefills = 0;
+            let completedRefills = 0;
+           
+            clients.forEach(client => {
+                const clientData = refillData[client.id];
+               
+                // Check if refill due today
+                if (clientData[todayKey] && (clientData[todayKey].startsWith('E') || clientData[todayKey].startsWith('D'))) {
+                    refillsToday++;
+                }
+               
+                // Count interventions needed
+                Object.values(clientData).forEach(status => {
+                    if (status.startsWith('M')) interventionsNeeded++;
+                    if (status.startsWith('R')) completedRefills++;
+                    if (status.startsWith('R') || status.startsWith('M')) totalRefills++;
+                });
+            });
+           
+            document.getElementById('refillsToday').textContent = refillsToday;
+            document.getElementById('interventionsNeeded').textContent = interventionsNeeded;
+           
+            const adherenceRate = totalRefills > 0 ? Math.round((completedRefills / totalRefills) * 100) : 100;
+            document.getElementById('adherenceRate').textContent = adherenceRate + '%';
+        }
+
+        // Check for missed refills and flag them
+        function flagMissedRefills() {
+            const today = new Date();
+            let interventions = [];
+           
+            clients.forEach(client => {
+                const clientData = refillData[client.id];
+                let missedCount = 0;
+               
+                Object.keys(clientData).forEach(dateKey => {
+                    const status = clientData[dateKey];
+                    if (status.startsWith('D')) {
+                        // Check if deadline has passed
+                        const deadlineDate = parseDate(dateKey);
+                        if (deadlineDate < today) {
+                            const refillNum = status.substring(1);
+                            refillData[client.id][dateKey] = `M${refillNum}`;
+                            missedCount++;
+                            interventions.push({
+                                client: client.name,
+                                date: dateKey,
+                                daysLate: Math.floor((today - deadlineDate) / (1000 * 60 * 60 * 24))
+                            });
+                        }
+                    }
+                });
+               
+                if (missedCount > 0) {
+                    showNotification(`${client.name}: ${missedCount} missed deadline(s) flagged`, 'warning');
+                }
+            });
+           
+            if (interventions.length > 0) {
+                showInterventions(interventions);
+                saveDataToStorage();
+                showNotification(`${interventions.length} total missed refills flagged for intervention.`, 'warning');
+            } else {
+                showNotification('No missed refills found!', 'success');
+            }
+           
+            renderTable();
+            updateStats();
+        }
+
+        // Parse date key back to Date object
+        function parseDate(dateKey) {
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const [monthStr, dayStr] = dateKey.split('-');
+            const monthIndex = months.indexOf(monthStr);
+            return new Date(currentYear, monthIndex, parseInt(dayStr));
+        }
+
+        // Show interventions panel
+        function showInterventions(interventions) {
+            const panel = document.getElementById('interventionsPanel');
+            const list = document.getElementById('interventionsList');
+           
+            let html = '';
+            interventions.forEach(intervention => {
+                html += `<div class="intervention-item">
+                    <strong>${intervention.client}</strong> - Missed refill on ${intervention.date}
+                    (${intervention.daysLate} days late)
+                </div>`;
+            });
+           
+            list.innerHTML = html;
+            panel.style.display = 'block';
+        }
+
+        // Check today's refills
+        function checkTodaysRefills() {
+            const today = new Date();
+            const todayKey = formatDateKey(today);
+           
+            clients.forEach(client => {
+                const status = refillData[client.id][todayKey];
+                if (status && (status.startsWith('E') || status.startsWith('D'))) {
+                    console.log(`${client.name} has a refill due today: ${status}`);
+                }
+            });
+        }
+
+        // Filter by month
+        function filterByMonth() {
+            // Implementation for month filtering
+            alert('Month filtering feature - would filter table to show only selected month');
+        }
+
+        // Search clients
+        function searchClients() {
+            const searchTerm = document.getElementById('clientSearch').value.toLowerCase();
+            const rows = document.querySelectorAll('#tableBody tr');
+           
+            rows.forEach(row => {
+                const clientName = row.cells[1].textContent.toLowerCase();
+                const medication = row.cells[3].textContent.toLowerCase();
+               
+                if (clientName.includes(searchTerm) || medication.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+           
+            // Show count of filtered results
+            const visibleRows = Array.from(rows).filter(row => row.style.display !== 'none').length;
+            const totalRows = rows.length;
+           
+            if (searchTerm) {
+                showNotification(`Showing ${visibleRows} of ${totalRows} clients`, 'info');
+            }
+        }
+
+        // Generate report
+        function generateReport() {
+            let report = 'ARVmada - MEDICATION REFILL TRACKER REPORT
+';
+            report += '==========================================
+
+';
+            report += `Total Clients: ${clients.length}
+`;
+            report += `Report Generated: ${new Date().toLocaleDateString()}
+`;
+            report += `Data Export Date: ${new Date().toISOString()}
+
+`;
+           
+            // Summary statistics
+            let totalRefills = 0;
+            let missedRefills = 0;
+           
+            clients.forEach(client => {
+                const clientRefills = Object.entries(refillData[client.id]);
+                const completed = clientRefills.filter(([key, value]) => value.startsWith('R'));
+                const missed = clientRefills.filter(([key, value]) => value.startsWith('M'));
+               
+                totalRefills += completed.length;
+                missedRefills += missed.length;
+               
+                report += `Client: ${client.name}
+`;
+                report += `Medication: ${client.medication}
+`;
+                report += `Supply: ${client.supplyDays || 30} days
+`;
+                report += `Start Date: ${client.startDate}
+`;
+                report += `Notes: ${client.notes || 'None'}
+`;
+                report += `Completed Refills: ${completed.length}
+`;
+                report += `Missed Refills: ${missed.length}
+`;
+                report += `Last Refill: ${completed.length > 0 ? completed[completed.length - 1][0] : 'None'}
+`;
+               
+                if (missed.length > 0) {
+                    report += `Missed Dates: ${missed.map(([date]) => date).join(', ')}
+`;
+                }
+                report += '
+';
+            });
+           
+            // Overall statistics
+            const adherenceRate = totalRefills > 0 ? ((totalRefills / (totalRefills + missedRefills)) * 100).toFixed(1) : '100.0';
+            report += `
+OVERALL STATISTICS:
+`;
+            report += `Total Completed Refills: ${totalRefills}
+`;
+            report += `Total Missed Refills: ${missedRefills}
+`;
+            report += `Overall Adherence Rate: ${adherenceRate}%
+`;
+           
+            // Create downloadable file
+            const blob = new Blob([report], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `arvmada-report-${new Date().toISOString().split('T')[0]}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+           
+            showNotification('Report generated and downloaded!', 'success');
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const addModal = document.getElementById('addClientModal');
+            const editModal = document.getElementById('editRefillModal');
+            const supplyModal = document.getElementById('refillSupplyModal');
+           
+            if (event.target === addModal) {
+                closeAddClientModal();
+            }
+            if (event.target === editModal) {
+                closeRefillEditor();
+            }
+            if (event.target === supplyModal) {
+                closeSupplyModal();
+            }
+        }
+
+        // Initialize the application when page loads
+        window.onload = init;
+    </script>
+</body>
+</html>
